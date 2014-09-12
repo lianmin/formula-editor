@@ -104,8 +104,8 @@ module.exports = function (grunt) {
                     imagesDir: 'src/images',
                     generatedImagesDir: 'build/images',
                     relativeAssets: false,
-                    httpImagesPath: 'http://g.assets.daily.taobao.net/alitx/<%= pkg.name%>/<%= pkg.version%>/images',
-                    httpGeneratedImagesPath: 'http://g.assets.daily.taobao.net/alitx/<%= pkg.name%>/<%= pkg.version%>/images'
+                    httpImagesPath: 'http://' + localIp + '/<%= pkg.name%>/images',
+                    httpGeneratedImagesPath: 'http://'  + localIp +  '/<%= pkg.name%>/images'
                 }
             },
             build: {
@@ -115,8 +115,8 @@ module.exports = function (grunt) {
                     imagesDir: 'src/images',
                     generatedImagesDir: 'build/images',
                     relativeAssets: false,
-                    httpImagesPath: 'http://g.tbcdn.cn/alitx/<%= pkg.name%>/<%= pkg.version%>/images',
-                    httpGeneratedImagesPath: 'http://g.tbcdn.cn/alitx/<%= pkg.name%>/<%= pkg.version%>/images'
+                    httpImagesPath: 'http://' + localIp + '/<%= pkg.name%>/images',
+                    httpGeneratedImagesPath: 'http://' + localIp + '/<%= pkg.name%>/images'
                 }
             }
         },
@@ -214,14 +214,13 @@ module.exports = function (grunt) {
                                 if (/\?\?/gmi.test(url) && !/,/gmi.test(url)) {
                                     url = url.replace(/\?\?/gi, '');
                                 }
-
-                                //支持alitx/??规则目录映射
-                                if (/\/alitx\/\?\?/gmi.test(url)) {
-                                    url = url.replace(/(\/alitx\/\?\?|,)(.*?\/)/gi, '$1$2build/');
+                                //支持formula-editor/??规则目录映射
+                                if (/\/formula-editor\/\?\?/gmi.test(url)) {
+                                    url = url.replace(/(\/formula-editor\/\?\?|,)(.*?\/)/gi, '$1$2build/');
                                 }
 
-                                //支持alitx/dpl/??规则目录映射
-                                url = url.replace(/(\/|,|\?\?)alitx\/(.*?\/)/gi, '$1$2build/');
+                                //支持formula-editor/??规则目录映射
+                                url = url.replace(/(\/|,|\?\?)formula-editor\/(.*?\/)/gi, '$1$2build/');
                                 url = url.replace(/(build\/)+/gi, 'build/'); //build目录修正
 
                                 req.url = url;
@@ -250,7 +249,7 @@ module.exports = function (grunt) {
                         return middlewares;
                     },
                     livereload: livereloadPort,
-                    open: 'http://' + localIp + ':' + serverPort + '/alitx/<%= pkg.name%>/',
+                    open: 'http://' + localIp + ':' + serverPort + '/formula-editor/<%= pkg.name%>/',
                     keepalive: false,
                     useAvailablePort: true
                 }
@@ -318,7 +317,6 @@ module.exports = function (grunt) {
         'jade',
         'compass:debug',
         'coffee:debug',
-        'shell:xtpl',
         'copy:debug',
         'kmc',
         'uglify:build',
@@ -344,24 +342,4 @@ module.exports = function (grunt) {
     grunt.registerTask('default', [
         'dev'
     ]);
-
-
-    var projectList = ['home', 'ucenter', 'activity', 'support', 'h5'];
-
-    grunt.registerTask('sync', '同步本地项目的package.json', function () {
-        grunt.log.writeln('同步package.json中的devDependencies...');
-        // 同步本地项目的package.json
-        projectList.forEach(function (i) {
-            var packagePath = '../' + i + '/package.json';
-            if (grunt.file.exists(packagePath)) {
-                var devDependencies = grunt.file.readJSON('../dpl/package.json').devDependencies;
-                var pkg = grunt.file.readJSON(packagePath);
-                pkg.devDependencies = devDependencies;
-                grunt.file.write(packagePath, JSON.stringify(pkg, null, 4));
-                grunt.log.oklns(packagePath + '同步成功');
-            }
-        });
-        // TODO:同步 npm_modules
-        //grunt.file.copy('../dpl/node_modules','/home/');
-    });
 };
