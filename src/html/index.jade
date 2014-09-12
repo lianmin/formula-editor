@@ -3,6 +3,16 @@ html
     head
         meta(charset="utf-8")
         title asdfadf
+        script(src="../js/lib/ueditor/1.4.3/ueditor.config.js")
+        script(src="../js/lib/ueditor/1.4.3/ueditor.all.min.js")
     body
+<<<<<<< HEAD:src/html/index.jade
         |asdfasd
     
+=======
+        script#container(name="content" type="text/plain").
+            这里写你的初始化内容
+        <!-- 实例化编辑器 -->
+        script.
+            var ue = UE.getEditor('container');
+>>>>>>> 1255ab0437c6a634d65c980bf5287caf1455a027:src/html/indes.jade
