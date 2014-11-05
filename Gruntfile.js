@@ -227,7 +227,7 @@ module.exports = function (grunt) {
 
                                 return path.resolve(__dirname, '../');
                             },
-                            proxy: 'g.assets.daily.taobao.net',
+                            proxy: 'g.assets.daily.h-simon.com',
                             cache: true,
                             log: false,
                             static: false
