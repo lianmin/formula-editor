@@ -1,65 +1,59 @@
 /*
-Copyright 2014, KISSY v5.0.0
+Copyright 2014, modulex@1.6.2
 MIT Licensed
-build time: Aug 13 18:33
+build time: Thu, 16 Oct 2014 07:22:55 GMT
 */
 /**
- * @ignore
- * A seed where KISSY grows up from, KISS Yeah !
- * @author https://github.com/kissyteam/kissy/contributors
+ * A module registration and load library.
+ *
+ * you can use
+ *
+ *     modulex.use('overlay,node', function(Overlay, Node){
+ *     });
+ *
+ * to load modules. and use
+ *
+ *     modulex.add(function(require, module, exports){
+ *     });
+ *
+ * to register modules.
  */
+/* exported modulex */
+/* jshint -W079 */
+var modulex = (function (undefined) {
+    function noop() {
+    }
 
-/**
- * The KISSY global namespace object. you can use
- *
- *
- *      KISSY.each/mix
- *
- * to do basic operation. or
- *
- *
- *      KISSY.use('overlay,node', function(S, Overlay, Node){
- *          //
- *      });
- *
- * to do complex task with modules.
- * @singleton
- * @class KISSY
- */
-/* exported KISSY */
-/*jshint -W079 */
-var KISSY = (function (undefined) {
-    // --no-module-wrap--
-    var self = this,
-        S;
+    if (typeof console === 'undefined') {
+        this.console = {log: noop, error: noop, warn: noop};
+    }
 
-    S = {
+    var mx = {
         /**
          * The build time of the library.
-         * NOTICE: '20140813183328' will replace with current timestamp when compressing.
+         * NOTICE: 'Thu, 16 Oct 2014 07:22:57 GMT' will replace with current timestamp when compressing.
          * @private
          * @type {String}
          */
-        __BUILD_TIME: '20140813183328',
+        __BUILD_TIME: 'Thu, 16 Oct 2014 07:22:57 GMT',
 
         /**
-         * KISSY Environment.
-         * @private
+         * modulex Environment.
          * @type {Object}
          */
         Env: {
-            host: self,
+            host: this,
             mods: {}
         },
 
         /**
-         * KISSY Config.
-         * If load kissy.js, Config.debug defaults to true.
-         * Else If load kissy-min.js, Config.debug defaults to false.
+         * modulex Config.
+         * If load modulex.js, Config.debug defaults to true.
+         * Else If load modulex-min.js, Config.debug defaults to false.
          * @private
          * @property {Object} Config
          * @property {Boolean} Config.debug
-         * @member KISSY
+         * @member modulex
          */
         Config: {
             debug: '@DEBUG@',
@@ -69,29 +63,18 @@ var KISSY = (function (undefined) {
 
         /**
          * The version of the library.
-         * NOTICE: '5.0.0' will replace with current version when compressing.
+         * NOTICE: '1.6.2' will replace with current version when compressing.
          * @type {String}
          */
-        version: '5.0.0',
+        version: '1.6.2',
 
         /**
-         * set KISSY configuration
+         * set modulex configuration
          * @param {Object|String} configName Config object or config key.
-         * @param {String} configName.base KISSY 's base path. Default: get from loader(-min).js or seed(-min).js
-         * @param {String} configName.tag KISSY 's timestamp for native module. Default: KISSY 's build time.
+         * @param {String} configName.base modulex 's base path. Default: get from loader(-min).js or seed(-min).js
+         * @param {String} configName.tag modulex 's timestamp for native module. Default: modulex 's build time.
          * @param {Boolean} configName.debug whether to enable debug mod.
          * @param {Boolean} configName.combine whether to enable combo.
-         * @param {Object} configName.logger logger config
-         * @param {Object[]} configName.logger.excludes  exclude configs
-         * @param {Object} configName.logger.excludes.0 a single exclude config
-         * @param {RegExp} configName.logger.excludes.0.logger  matched logger will be excluded from logging
-         * @param {String} configName.logger.excludes.0.minLevel  minimum logger level (enum of debug info warn error)
-         * @param {String} configName.logger.excludes.0.maxLevel  maximum logger level (enum of debug info warn error)
-         * @param {Object[]} configName.logger.includes include configs
-         * @param {Object} configName.logger.includes.0 a single include config
-         * @param {RegExp} configName.logger.includes.0.logger  matched logger will be included from logging
-         * @param {String} configName.logger.excludes.0.minLevel  minimum logger level (enum of debug info warn error)
-         * @param {String} configName.logger.excludes.0.maxLevel  maximum logger level (enum of debug info warn error)
          * @param {Object} configName.packages Packages definition with package name as the key.
          * @param {String} configName.packages.base Package base path.
          * @param {String} configName.packages.tag  Timestamp for this package's module file.
@@ -102,12 +85,12 @@ var KISSY = (function (undefined) {
          *
          * for example:
          *     @example
-         *     KISSY.config({
+         *     modulex.config({
          *      combine: true,
-         *      base: '',
+         *      base: '.',
          *      packages: {
          *          'gallery': {
-         *              base: 'http://a.tbcdn.cn/s/kissy/gallery/'
+         *              base: 'http://a.tbcdn.cn/s/modulex/gallery/'
          *          }
          *      },
          *      modules: {
@@ -118,12 +101,10 @@ var KISSY = (function (undefined) {
          *     });
          */
         config: function (configName, configValue) {
-            var cfg,
-                r,
-                self = this,
-                fn,
-                Config = S.Config,
-                configFns = Config.fns;
+            var cfg, r, fn;
+            var Config = mx.Config;
+            var configFns = Config.fns;
+            var self = this;
             if (typeof configName === 'string') {
                 cfg = configFns[configName];
                 if (configValue === undefined) {
@@ -154,209 +135,48 @@ var KISSY = (function (undefined) {
         }
     };
 
-    var Loader = S.Loader = {};
-
-    if (typeof location !== 'undefined') {
-        if (location.search.indexOf('ks-debug') !== -1) {
-            S.Config.debug = true;
-        }
-    }
+    var Loader = mx.Loader = {};
 
     /**
      * Loader Status Enum
-     * @enum {Number} KISSY.Loader.Status
+     * @enum {Number} modulex.Loader.Status
      */
     Loader.Status = {
         /** error */
         ERROR: -1,
-        /** init */
-        INIT: 0,
+        /** unloaded */
+        UNLOADED: 0,
         /** loading */
         LOADING: 1,
         /** loaded */
         LOADED: 2,
-        /** attaching */
-        ATTACHING: 3,
-        /** attached */
-        ATTACHED: 4
+        /** initializing */
+        INITIALIZING: 3,
+        /** initialized */
+        INITIALIZED: 4
     };
 
-    return S;
-})();/**
- * logger utils
+    return mx;
+})();
+/**
+ * Utils for modulex loader
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    function getLogger(logger) {
-        var obj = {};
-        for (var cat in loggerLevel) {
-            /*jshint loopfunc: true*/
-            (function (obj, cat) {
-                obj[cat] = function (msg) {
-                    return LoggerManager.log(msg, cat, logger);
-                };
-            })(obj, cat);
-        }
-        return obj;
-    }
-
-    var config = {};
-    if ('@DEBUG@') {
-        config = {
-            excludes: [
-                {
-                    logger: /^s\/.*/,
-                    maxLevel: 'info',
-                    minLevel: 'debug'
-                }
-            ]
-        };
-    }
-
-    var loggerLevel = {
-        debug: 10,
-        info: 20,
-        warn: 30,
-        error: 40
-    };
-
-    var LoggerManager = {
-        config: function (cfg) {
-            config = cfg || config;
-            return config;
-        },
-        /**
-         * Prints debug info.
-         * @param msg {String} the message to log.
-         * @param {String} [cat] the log category for the message. Default
-         *        categories are 'info', 'warn', 'error', 'time' etc.
-         * @param {String} [logger] the logger of the the message (opt)
-         */
-        log: function (msg, cat, logger) {
-            if ('@DEBUG@') {
-                var matched = 1;
-                if (logger) {
-                    var list, i, l, level, minLevel, maxLevel, reg;
-                    cat = cat || 'debug';
-                    level = loggerLevel[cat] || loggerLevel.debug;
-                    if ((list = config.includes)) {
-                        matched = 0;
-                        for (i = 0; i < list.length; i++) {
-                            l = list[i];
-                            reg = l.logger;
-                            maxLevel = loggerLevel[l.maxLevel] || loggerLevel.error;
-                            minLevel = loggerLevel[l.minLevel] || loggerLevel.debug;
-                            if (minLevel <= level && maxLevel >= level && logger.match(reg)) {
-                                matched = 1;
-                                break;
-                            }
-                        }
-                    } else if ((list = config.excludes)) {
-                        matched = 1;
-                        for (i = 0; i < list.length; i++) {
-                            l = list[i];
-                            reg = l.logger;
-                            maxLevel = loggerLevel[l.maxLevel] || loggerLevel.error;
-                            minLevel = loggerLevel[l.minLevel] || loggerLevel.debug;
-                            if (minLevel <= level && maxLevel >= level && logger.match(reg)) {
-                                matched = 0;
-                                break;
-                            }
-                        }
-                    }
-                    if (matched) {
-                        msg = logger + ': ' + msg;
-                    }
-                }
-                /*global console*/
-                if (matched) {
-                    if (typeof console !== 'undefined' && console.log) {
-                        console[cat && console[cat] ? cat : 'log'](msg);
-                    }
-                    return msg;
-                }
-            }
-            return undefined;
-        },
-
-        /**
-         * get log instance for specified logger
-         * @param {String} logger logger name
-         * @returns {KISSY.LoggerManager} log instance
-         */
-        getLogger: function (logger) {
-            return getLogger(logger);
-        },
-
-        /**
-         * Throws error message.
-         */
-        error: function (msg) {
-            if ('@DEBUG@') {
-                // with stack info!
-                throw msg instanceof  Error ? msg : new Error(msg);
-            }
-        }
-    };
-
+(function (mx) {
+    var Loader = mx.Loader;
+    var Env = mx.Env;
+    var Status = Loader.Status;
+    var mods = Env.mods;
+    var map = Array.prototype.map;
+    var host = Env.host;
     /**
-     * Log class for specified logger
-     * @class KISSY.LoggerManager
+     * @class modulex.Loader.Utils
+     * Utils for modulex Loader
+     * @singleton
      * @private
      */
-    /**
-     * print debug log
-     * @method debug
-     * @member KISSY.LoggerManager
-     * @param {String} str log str
-     */
-
-    /**
-     * print info log
-     * @method info
-     * @member KISSY.LoggerManager
-     * @param {String} str log str
-     */
-
-    /**
-     * print warn log
-     * @method log
-     * @member KISSY.LoggerManager
-     * @param {String} str log str
-     */
-
-    /**
-     * print error log
-     * @method error
-     * @member KISSY.LoggerManager
-     * @param {String} str log str
-     */
-
-    S.LoggerMangaer = LoggerManager;
-    S.getLogger = LoggerManager.getLogger;
-    S.log = LoggerManager.log;
-    S.error = LoggerManager.error;
-    S.Config.fns.logger = LoggerManager.config;
-})(KISSY);/**
- * @ignore
- * Utils for kissy loader
- * @author yiminghe@gmail.com
- */
-(function (S) {
-    // --no-module-wrap--
-    var Loader = S.Loader,
-        Env = S.Env,
-        mods = Env.mods,
-        map = Array.prototype.map,
-        host = Env.host,
-        /**
-         * @class KISSY.Loader.Utils
-         * Utils for KISSY Loader
-         * @singleton
-         * @private
-         */
-        Utils = Loader.Utils = {},
-        doc = host.document;
+    var Utils = Loader.Utils = {};
+    var doc = host.document;
 
     function numberify(s) {
         var c = 0;
@@ -377,11 +197,16 @@ var KISSY = (function (undefined) {
         return parts;
     }
 
-    var m, v,
-        ua = (host.navigator || {}).userAgent || '';
+    var m, v;
+    var ua = (host.navigator || {}).userAgent || '';
 
     // https://github.com/kissyteam/kissy/issues/545
-    if (((m = ua.match(/AppleWebKit\/([\d.]*)/)) || (m = ua.match(/Safari\/([\d.]*)/))) && m[1]) {
+    // AppleWebKit/535.19
+    // AppleWebKit534.30
+    // appleWebKit/534.30
+    // ApplelWebkit/534.30 （SAMSUNG-GT-S6818）
+    // AndroidWebkit/534.30
+    if (((m = ua.match(/Web[Kk]it[\/]{0,1}([\d.]*)/)) || (m = ua.match(/Safari[\/]{0,1}([\d.]*)/))) && m[1]) {
         Utils.webkit = numberify(m[1]);
     }
     if ((m = ua.match(/Trident\/([\d.]*)/))) {
@@ -400,25 +225,25 @@ var KISSY = (function (undefined) {
         Utils.trident = Utils.trident || 1;
     }
 
-    var urlReg = /http(s)?:\/\/([^/]+)(?::(\d+))?/,
-        commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg,
-        requireRegExp = /[^.'"]\s*require\s*\((['"])([^)]+)\1\)/g;
+    var uriReg = /http(s)?:\/\/([^/]+)(?::(\d+))?/;
+    var commentRegExp = /(\/\*([\s\mx]*?)\*\/|([^:]|^)\/\/(.*)$)/mg;
+    var requireRegExp = /[^.'"]\s*require\s*\((['"])([^)]+)\1\)/g;
 
-    function normalizeName(name) {
+    function normalizeId(id) {
         // 'x/' 'x/y/z/'
-        if (name.charAt(name.length - 1) === '/') {
-            name += 'index';
+        if (id.charAt(id.length - 1) === '/') {
+            id += 'index';
         }
         // x.js === x
-        if (Utils.endsWith(name, '.js')) {
-            name = name.slice(0, -3);
+        if (Utils.endsWith(id, '.js')) {
+            id = id.slice(0, -3);
         }
-        return name;
+        return id;
     }
 
     function each(obj, fn) {
-        var i = 0,
-            myKeys, l;
+        var i = 0;
+        var myKeys, l;
         if (isArray(obj)) {
             l = obj.length;
             for (; i < l; i++) {
@@ -459,6 +284,13 @@ var KISSY = (function (undefined) {
     mix(Utils, {
         mix: mix,
 
+        getSuffix: function (str) {
+            var m = str.match(/\.(\w+)$/);
+            if (m) {
+                return m[1];
+            }
+        },
+
         noop: function () {
         },
 
@@ -467,8 +299,8 @@ var KISSY = (function (undefined) {
                 return map.call(arr, fn, context || this);
             } :
             function (arr, fn, context) {
-                var len = arr.length,
-                    res = new Array(len);
+                var len = arr.length;
+                var res = new Array(len);
                 for (var i = 0; i < len; i++) {
                     var el = typeof arr === 'string' ? arr.charAt(i) : arr[i];
                     if (el ||
@@ -500,6 +332,27 @@ var KISSY = (function (undefined) {
 
         now: Date.now || function () {
             return +new Date();
+        },
+
+        collectErrors: function (mods, errorList, cache) {
+            var i, m, mod, modStatus;
+            cache = cache || {};
+            errorList = errorList || [];
+            for (i = 0; i < mods.length; i++) {
+                mod = mods[i];
+                m = mod.id;
+                if (cache[m]) {
+                    continue;
+                }
+                cache[m] = 1;
+                modStatus = mod.status;
+                if (modStatus === Status.ERROR) {
+                    errorList.push(mod);
+                    continue;
+                }
+                Utils.collectErrors(mod.getNormalizedRequiredModules(), errorList, cache);
+            }
+            return errorList;
         },
 
         each: each,
@@ -541,36 +394,27 @@ var KISSY = (function (undefined) {
             return parts.join('/').replace(/\/+/, '/');
         },
 
-        isSameOriginAs: function (url1, url2) {
-            var urlParts1 = url1.match(urlReg);
-            var urlParts2 = url2.match(urlReg);
-            return urlParts1[0] === urlParts2[0];
+        isSameOriginAs: function (uri1, uri2) {
+            var uriParts1 = uri1.match(uriReg);
+            var uriParts2 = uri2.match(uriReg);
+            return uriParts1[0] === uriParts2[0];
         },
 
-        /**
-         * get document head
-         * @return {HTMLElement}
-         */
+        // get document head
         docHead: function () {
             return doc.getElementsByTagName('head')[0] || doc.documentElement;
         },
 
-        /**
-         * Returns hash code of a string djb2 algorithm
-         * @param {String} str
-         * @returns {String} hash code
-         */
+        // Returns hash code of a string djb2 algorithm
         getHash: function (str) {
-            var hash = 5381,
-                i;
+            var hash = 5381;
+            var i;
             for (i = str.length; --i > -1;) {
                 hash = ((hash << 5) + hash) + str.charCodeAt(i);
                 /* hash * 33 + char */
             }
             return hash + '';
         },
-
-        // ---------------------------------- for modules
 
         getRequiresFromFn: function (fn) {
             var requires = [];
@@ -586,118 +430,88 @@ var KISSY = (function (undefined) {
         },
 
         // get a module from cache or create a module instance
-        createModule: function (name, cfg) {
-            var module = mods[name];
-
+        createModule: function (id, cfg) {
+            var module = mods[id];
             if (!module) {
-                name = normalizeName(name);
-                module = mods[name];
+                id = normalizeId(id);
+                module = mods[id];
             }
-
             if (module) {
                 if (cfg) {
-                    mix(module, cfg);
-                    // module definition changes requires
-                    if (cfg.requires) {
-                        module.setRequiresModules(cfg.requires);
-                    }
+                    module.reset(cfg);
                 }
                 return module;
             }
-
-            // 防止 cfg 里有 tag，构建 fullpath 需要
-            mods[name] = module = new Loader.Module(mix({
-                name: name
+            mods[id] = module = new Loader.Module(mix({
+                id: id
             }, cfg));
 
             return module;
         },
 
-        createModules: function (names) {
-            return Utils.map(names, function (name) {
-                return Utils.createModule(name);
+        createModules: function (ids) {
+            return Utils.map(ids, function (id) {
+                return Utils.createModule(id);
             });
         },
 
-        attachModules: function (mods) {
-            var l = mods.length, i;
+        initModules: function (modsToInit) {
+            var l = modsToInit.length;
+            var i;
+            var success = 1;
             for (i = 0; i < l; i++) {
-                mods[i].attachRecursive();
+                success &= modsToInit[i].initRecursive();
             }
+            return success;
         },
 
         getModulesExports: function (mods) {
-            var l = mods.length, i,
-                ret = [];
-            for (i = 0; i < l; i++) {
+            var l = mods.length;
+            var ret = [];
+            for (var i = 0; i < l; i++) {
                 ret.push(mods[i].getExports());
             }
             return ret;
         },
 
-        addModule: function (name, factory, config) {
-            var module = mods[name];
+        addModule: function (id, factory, config) {
+            var module = mods[id];
             if (module && module.factory !== undefined) {
-                S.log(name + ' is defined more than once', 'warn');
+                console.warn(id + ' is defined more than once');
                 return;
             }
-            Utils.createModule(name, mix({
-                name: name,
+            Utils.createModule(id, mix({
+                id: id,
                 status: Loader.Status.LOADED,
                 factory: factory
             }, config));
-
         }
     });
-})
-(KISSY);
+})(modulex);
 /**
  * @ignore
- * setup data structure for kissy loader
+ * setup data structure for modulex loader
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    // --no-module-wrap--
-    var Loader = S.Loader,
-        Config = S.Config,
-        Status = Loader.Status,
-        ATTACHED = Status.ATTACHED,
-        ATTACHING = Status.ATTACHING,
-        Utils = Loader.Utils,
-        startsWith = Utils.startsWith,
-        createModule = Utils.createModule,
-        mix = Utils.mix;
-
-    function makeArray(arr) {
-        var ret = [];
-        for (var i = 0; i < arr.length; i++) {
-            ret[i] = arr[i];
-        }
-        return ret;
-    }
-
-    function wrapUse(fn) {
-        if (typeof fn === 'function') {
-            return function () {
-                fn.apply(this, makeArray(arguments).slice(1));
-            };
-        } else if (fn && fn.success) {
-            var original = fn.success;
-            fn.success = function () {
-                original.apply(this, makeArray(arguments).slice(1));
-            };
-            return fn;
-        }
-    }
+(function (mx) {
+    var Loader = mx.Loader;
+    var Config = mx.Config;
+    var Status = Loader.Status;
+    var INITIALIZED = Status.INITIALIZED;
+    var INITIALIZING = Status.INITIALIZING;
+    var ERROR = Status.ERROR;
+    var Utils = Loader.Utils;
+    var startsWith = Utils.startsWith;
+    var createModule = Utils.createModule;
+    var mix = Utils.mix;
 
     function checkGlobalIfNotExist(self, property) {
         return property in self ? self[property] : Config[property];
     }
 
     /**
-     * @class KISSY.Loader.Package
+     * @class modulex.Loader.Package
      * @private
-     * This class should not be instantiated manually.
      */
     function Package(cfg) {
         mix(this, cfg);
@@ -724,7 +538,7 @@ var KISSY = (function (undefined) {
         },
 
         /**
-         * get package url
+         * get package uri
          */
         getBase: function () {
             return this.base;
@@ -757,10 +571,15 @@ var KISSY = (function (undefined) {
 
     Loader.Package = Package;
 
+    function async(self, mods, callback) {
+        for (var i = 0; i < mods.length; i++) {
+            mods[i] = self.resolve(mods[i]).id;
+        }
+        mx.use(mods, callback);
+    }
+
     /**
-     * @class KISSY.Loader.Module
-     * @private
-     * This class should not be instantiated manually.
+     * @class modulex.Loader.Module
      */
     function Module(cfg) {
         var self = this;
@@ -772,17 +591,34 @@ var KISSY = (function (undefined) {
         /**
          * status of current modules
          */
-        self.status = Status.INIT;
+        self.status = Status.UNLOADED;
 
         /**
          * name of this module
          */
-        self.name = undefined;
+        self.id = undefined;
 
         /**
          * factory of this module
          */
         self.factory = undefined;
+
+        /**
+         * user config
+         *
+         *  modulex.config('modules',{
+         *      x: {
+         *          y:1
+         *      }
+         *  })
+         *
+         *  x.js:
+         *
+         *  modulex.add(function(require, exports, module){
+         *      console.log(module.config().y);
+         *  });
+         */
+        self.config = undefined;
 
         // lazy initialize and commonjs module format
         self.cjs = 1;
@@ -791,62 +627,55 @@ var KISSY = (function (undefined) {
 
         self.waits = {};
 
-        var require = self._require = function (moduleName) {
-            if (typeof moduleName === 'string') {
-                var requiresModule = self.resolve(moduleName);
-                Utils.attachModules(requiresModule.getNormalizedModules());
+        var require = self._require = function (id, callback) {
+            if (typeof id === 'string') {
+                var requiresModule = self.resolve(id);
+                Utils.initModules(requiresModule.getNormalizedModules());
                 return requiresModule.getExports();
             } else {
-                require.async.apply(require, arguments);
+                async(self, id, callback);
             }
         };
 
-        require.async = function (mods) {
-            for (var i = 0; i < mods.length; i++) {
-                mods[i] = self.resolve(mods[i]).name;
+        require.toUrl = function (relativeUrl) {
+            var url = self.getUri();
+            var prefix = '';
+            var suffix = url;
+            var index = url.indexOf('//');
+            if (index !== -1) {
+                prefix = url.slice(0, index + 2);
+                suffix = url.slice(index + 2);
             }
-            var args = makeArray(arguments);
-            args[0] = mods;
-            args[1] = wrapUse(args[1]);
-            S.use.apply(S, args);
+            return prefix + Utils.normalizePath(suffix, relativeUrl);
         };
 
-        require.resolve = function (relativeName) {
-            return self.resolve(relativeName).getUrl();
-        };
-
-        require.toUrl = function (path) {
-            var url = self.getUrl();
-            var pathIndex = url.indexOf('//');
-            if (pathIndex === -1) {
-                pathIndex = 0;
-            } else {
-                pathIndex = url.indexOf('/', pathIndex + 2);
-                if (pathIndex === -1) {
-                    pathIndex = 0;
-                }
-            }
-            var rest = url.substring(pathIndex);
-            path = Utils.normalizePath(rest, path);
-            return url.substring(0, pathIndex) + path;
-        };
-
-        require.load = S.getScript;
-//      relative name resolve cache
-//      self.resolveCache = {};
+        require.load = mx.getScript;
     }
 
     Module.prototype = {
-        kissy: 1,
+        modulex: 1,
 
         constructor: Module,
 
-        require: function (moduleName) {
-            return this.resolve(moduleName).getExports();
+        config: function () {
+            return this.config;
         },
 
-        resolve: function (relativeName) {
-            return createModule(Utils.normalizePath(this.name, relativeName));
+        reset: function (cfg) {
+            var self = this;
+            mix(self, cfg);
+            // module definition changes requires
+            if (cfg.requires) {
+                self.setRequiresModules(cfg.requires);
+            }
+        },
+
+        require: function (id) {
+            return this.resolve(id).getExports();
+        },
+
+        resolve: function (relativeId) {
+            return createModule(Utils.normalizePath(this.id, relativeId));
         },
 
         add: function (loader) {
@@ -873,37 +702,37 @@ var KISSY = (function (undefined) {
          * @return {String} css or js
          */
         getType: function () {
-            var self = this,
-                v = self.type;
+            var self = this;
+            var v = self.type;
             if (!v) {
-                if (Utils.endsWith(self.name, '.css')) {
+                var id = self.id;
+                if (Utils.endsWith(id, '.css')) {
                     v = 'css';
-                } else {
+
+                } else if (Utils.endsWith(id, '.js')) {
                     v = 'js';
+                } else {
+                    v = Utils.getSuffix(id) || 'js';
                 }
                 self.type = v;
             }
             return v;
         },
 
-        getExports: function () {
-            return this.getNormalizedModules()[0].exports;
-        },
-
         getAlias: function () {
-            var self = this,
-                name = self.name;
+            var self = this;
+            var id = self.id;
             if (self.normalizedAlias) {
                 return self.normalizedAlias;
             }
             var alias = getShallowAlias(self);
             var ret = [];
-            if (alias[0] === name) {
+            if (alias[0] === id) {
                 ret = alias;
             } else {
                 for (var i = 0, l = alias.length; i < l; i++) {
                     var aliasItem = alias[i];
-                    if (aliasItem && aliasItem !== name) {
+                    if (aliasItem && aliasItem !== id) {
                         var mod = createModule(aliasItem);
                         var normalAlias = mod.getAlias();
                         if (normalAlias) {
@@ -930,39 +759,44 @@ var KISSY = (function (undefined) {
         },
 
         /**
-         * Get the path url of current module if load dynamically
+         * Get the path uri of current module if load dynamically
          * @return {String}
          */
-        getUrl: function () {
+        getUri: function () {
             var self = this;
-            if (!self.url) {
-                self.url = Utils.normalizeSlash(S.Config.resolveModFn(self));
+            if (!self.uri) {
+                self.uri = Utils.normalizeSlash(mx.Config.resolveModFn(self));
             }
-            return self.url;
+            return self.uri;
+        },
+
+        getExports: function () {
+            var normalizedModules = this.getNormalizedModules();
+            return normalizedModules[0] && normalizedModules[0].exports;
         },
 
         /**
          * Get the package which current module belongs to.
-         * @return {KISSY.Loader.Package}
+         * @return {modulex.Loader.Package}
          */
         getPackage: function () {
             var self = this;
             if (!('packageInfo' in self)) {
-                var name = self.name;
+                var id = self.id;
                 // absolute path
-                if (startsWith(name, '/') ||
-                    startsWith(name, 'http://') ||
-                    startsWith(name, 'https://') ||
-                    startsWith(name, 'file://')) {
+                if (startsWith(id, '/') ||
+                    startsWith(id, 'http://') ||
+                    startsWith(id, 'https://') ||
+                    startsWith(id, 'file://')) {
                     self.packageInfo = null;
                     return;
                 }
-                var packages = Config.packages,
-                    modNameSlash = self.name + '/',
-                    pName = '',
-                    p;
+                var packages = Config.packages;
+                var modIdSlash = self.id + '/';
+                var pName = '';
+                var p;
                 for (p in packages) {
-                    if (startsWith(modNameSlash, p + '/') && p.length > pName.length) {
+                    if (startsWith(modIdSlash, p + '/') && p.length > pName.length) {
                         pName = p;
                     }
                 }
@@ -1020,102 +854,143 @@ var KISSY = (function (undefined) {
             return self.requiredModules;
         },
 
-        attachSelf: function () {
-            var self = this,
-                status = self.status,
-                factory = self.factory,
-                exports;
+        callFactory: function () {
+            var self = this;
+            return self.factory.apply(self,
+                (
+                    self.cjs ?
+                        [self._require, self.exports, self] :
+                        Utils.map(self.getRequiredModules(), function (m) {
+                            return m.getExports();
+                        })
+                    )
+            );
+        },
 
-            if (status === Status.ATTACHED || status < Status.LOADED) {
-                return true;
-            }
-
+        initSelf: function () {
+            var self = this;
+            var factory = self.factory;
+            var exports;
             if (typeof factory === 'function') {
                 self.exports = {};
-                // compatible and efficiency
-                // KISSY.add(function(S,undefined){})
-                // 需要解开 index，相对路径
-                // 但是需要保留 alias，防止值不对应
-                //noinspection JSUnresolvedFunction
-                exports = factory.apply(self,
-                    // KISSY.add(function(S){module.require}) lazy initialize
-                    (
-                        self.cjs ?
-                            [S, self._require, self.exports, self] :
-                            [S].concat(Utils.map(self.getRequiredModules(), function (m) {
-                                return m.getExports();
-                            }))
-                        )
-                );
+
+                if (Config.debug) {
+                    exports = self.callFactory();
+                } else {
+                    try {
+                        exports = self.callFactory();
+                    } catch (e) {
+                        self.status = ERROR;
+                        if (self.onError || Config.onModuleError) {
+                            var error = {
+                                type: 'init',
+                                exception: e,
+                                module: self
+                            };
+                            self.error = error;
+                            if (self.onError) {
+                                self.onError(error);
+                            }
+                            if (Config.onModuleError) {
+                                Config.onModuleError(error);
+                            }
+                        } else {
+                            setTimeout(function () {
+                                throw e;
+                            }, 0);
+                        }
+                        return 0;
+                    }
+                    var success = 1;
+                    Utils.each(self.getNormalizedRequiredModules(), function (m) {
+                        if (m.status === ERROR) {
+                            success = 0;
+                            return false;
+                        }
+                    });
+                    if (!success) {
+                        return 0;
+                    }
+                }
+
                 if (exports !== undefined) {
-                    // noinspection JSUndefinedPropertyAssignment
                     self.exports = exports;
                 }
             } else {
-                //noinspection JSUndefinedPropertyAssignment
                 self.exports = factory;
             }
-
-            self.status = ATTACHED;
-            if (self.afterAttach) {
-                self.afterAttach(self.exports);
+            self.status = INITIALIZED;
+            if (self.afterInit) {
+                self.afterInit(self);
             }
+            if (Config.afterModuleInit) {
+                Config.afterModuleInit(self);
+            }
+            return 1;
         },
 
-        attachRecursive: function () {
-            var self = this,
-                status;
-            status = self.status;
-            // attached or circular dependency
-            if (status >= ATTACHING || status < Status.LOADED) {
-                return self;
+        initRecursive: function () {
+            var self = this;
+            var success = 1;
+            var status = self.status;
+            if (status === ERROR) {
+                return 0;
             }
-            self.status = ATTACHING;
+            // initialized or circular dependency
+            if (status >= INITIALIZING) {
+                return success;
+            }
+            self.status = INITIALIZING;
             if (self.cjs) {
                 // commonjs format will call require in module code again
-                self.attachSelf();
+                success = self.initSelf();
             } else {
                 Utils.each(self.getNormalizedRequiredModules(), function (m) {
-                    m.attachRecursive();
+                    success = success && m.initRecursive();
                 });
-                self.attachSelf();
+                if (success) {
+                    self.initSelf();
+                }
             }
-            return self;
+            return success;
         },
 
         undef: function () {
-            this.status = Status.INIT;
-            delete this.factory;
-            delete this.exports;
+            this.status = Status.UNLOADED;
+            this.error = null;
+            this.factory = null;
+            this.exports = null;
         }
     };
 
-    function pluginAlias(name) {
-        var index = name.indexOf('!');
+    function pluginAlias(id) {
+        var index = id.indexOf('!');
         if (index !== -1) {
-            var pluginName = name.substring(0, index);
-            name = name.substring(index + 1);
-            var Plugin = createModule(pluginName).attachRecursive().exports || {};
+            var pluginId = id.substring(0, index);
+            id = id.substring(index + 1);
+            var pluginMod = createModule(pluginId);
+            pluginMod.initRecursive();
+            var Plugin = pluginMod.getExports() || {};
             if (Plugin.alias) {
-                name = Plugin.alias(S, name, pluginName);
+                id = Plugin.alias(mx, id, pluginId);
             }
         }
-        return name;
+        return id;
     }
 
     function normalizeRequires(requires, self) {
         requires = requires || [];
         var l = requires.length;
         for (var i = 0; i < l; i++) {
-            requires[i] = self.resolve(requires[i]).name;
+            requires[i] = self.resolve(requires[i]).id;
         }
         return requires;
     }
 
     function getShallowAlias(mod) {
-        var name = mod.name,
-            packageInfo,
-            alias = mod.alias;
+        var id = mod.id;
+        var packageInfo;
+        var alias = mod.alias;
         if (typeof alias === 'string') {
             mod.alias = alias = [alias];
         }
@@ -1124,62 +999,55 @@ var KISSY = (function (undefined) {
         }
         packageInfo = mod.getPackage();
         if (packageInfo && packageInfo.alias) {
-            alias = packageInfo.alias(name);
+            alias = packageInfo.alias(id);
         }
         alias = mod.alias = alias || [
-            pluginAlias(name)
+            pluginAlias(id)
         ];
         return alias;
     }
 
     Loader.Module = Module;
-})(KISSY);
+})(modulex);
+
 /**
  * @ignore
  * script/css load across browser
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    // --no-module-wrap--
-    var   logger = S.getLogger('s/loader/getScript');
-
-    var CSS_POLL_INTERVAL = 30,
-        Utils = S.Loader.Utils,
+(function (mx) {
+    var CSS_POLL_INTERVAL = 30;
+    var Utils = mx.Loader.Utils;
     // central poll for link node
-        timer = 0,
+    var timer = 0;
     // node.id:{callback:callback,node:node}
-        monitors = {};
+    var monitors = {};
 
     function startCssTimer() {
         if (!timer) {
-            logger.debug('start css poll timer');
             cssPoll();
         }
     }
 
-    function isCssLoaded(node, url) {
+    function isCssLoaded(node) {
         var loaded = 0;
         if (Utils.webkit) {
             // http://www.w3.org/TR/Dom-Level-2-Style/stylesheets.html
             if (node.sheet) {
-                logger.debug('webkit css poll loaded: ' + url);
                 loaded = 1;
             }
         } else if (node.sheet) {
             try {
                 var cssRules = node.sheet.cssRules;
                 if (cssRules) {
-                    logger.debug('same domain css poll loaded: ' + url);
                     loaded = 1;
                 }
             } catch (ex) {
                 var exName = ex.name;
-                logger.debug('css poll exception: ' + exName + ' ' + ex.code + ' ' + url);
                 // http://www.w3.org/TR/dom/#dom-domexception-code
                 if (// exName == 'SecurityError' ||
                 // for old firefox
                     exName === 'NS_ERROR_DOM_SECURITY_ERR') {
-                    logger.debug('css poll exception: ' + exName + 'loaded : ' + url);
                     loaded = 1;
                 }
             }
@@ -1189,19 +1057,17 @@ var KISSY = (function (undefined) {
 
     // single thread is ok
     function cssPoll() {
-        for (var url in monitors) {
-            var callbackObj = monitors[url],
-                node = callbackObj.node;
-            if (isCssLoaded(node, url)) {
+        for (var uri in monitors) {
+            var callbackObj = monitors[uri];
+            var node = callbackObj.node;
+            if (isCssLoaded(node)) {
                 if (callbackObj.callback) {
                     callbackObj.callback.call(node);
                 }
-                delete monitors[url];
+                delete monitors[uri];
             }
         }
-
         if (Utils.isEmptyObject(monitors)) {
-            logger.debug('clear css poll timer');
             timer = 0;
         } else {
             timer = setTimeout(cssPoll, CSS_POLL_INTERVAL);
@@ -1211,16 +1077,15 @@ var KISSY = (function (undefined) {
     // refer : http://lifesinger.org/lab/2011/load-js-css/css-preload.html
     // 暂时不考虑如何判断失败，如 404 等
     Utils.pollCss = function (node, callback) {
-        var href = node.href,
-            arr;
-        arr = monitors[href] = {};
+        var href = node.href;
+        var arr = monitors[href] = {};
         arr.node = node;
         arr.callback = callback;
         startCssTimer();
     };
 
     Utils.isCssLoaded = isCssLoaded;
-})(KISSY);
+})(modulex);
 /*
  References:
  - http://unixpapa.com/js/dyna.html
@@ -1239,21 +1104,21 @@ var KISSY = (function (undefined) {
  - http://lifesinger.org/lab/2011/load-js-css/css-preload.html
  - others
  - http://www.zachleat.com/web/load-css-dynamically/
- *//**
+ */
+/**
  * @ignore
  * getScript support for css and js callback after load
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    // --no-module-wrap--
-    var MILLISECONDS_OF_SECOND = 1000,
-        win = S.Env.host,
-        doc = win.document,
-        Utils = S.Loader.Utils,
+(function (mx) {
+    var MILLISECONDS_OF_SECOND = 1000;
+    var win = mx.Env.host;
+    var doc = win.document;
+    var Utils = mx.Loader.Utils;
     // solve concurrent requesting same script file
-        jsCssCallbacks = {},
-        webkit = Utils.webkit,
-        headNode;
+    var jsCssCallbacks = {};
+    var webkit = Utils.webkit;
+    var headNode;
 
     /**
      * Load a javascript/css file from the server using a GET HTTP request,
@@ -1261,9 +1126,9 @@ var KISSY = (function (undefined) {
      *
      * for example:
      *      @example
-     *      getScript(url, success, charset);
+     *      modulex.getScript(uri, success, charset);
      *      // or
-     *      getScript(url, {
+     *      modulex.getScript(uri, {
      *          charset: string
      *          success: fn,
      *          error: fn,
@@ -1271,9 +1136,8 @@ var KISSY = (function (undefined) {
      *      });
      *
      * Note 404/500 status in ie<9 will trigger success callback.
-     * If you want a jsonp operation, please use {@link KISSY.IO} instead.
      *
-     * @param {String} url resource's url
+     * @param {String} uri resource's uri
      * @param {Function|Object} [success] success callback or config
      * @param {Function} [success.success] success callback
      * @param {Function} [success.error] error callback
@@ -1281,15 +1145,14 @@ var KISSY = (function (undefined) {
      * @param {String} [success.charset] charset of current resource
      * @param {String} [charset] charset of current resource
      * @return {HTMLElement} script/style node
-     * @member KISSY
+     * @member modulex
      */
-    S.getScript = function (url, success, charset) {
-        // can not use KISSY.Uri, url can not be encoded for some url
+    mx.getScript = function (uri, success, charset) {
+        // can not use modulex.Uri, uri can not be encoded for some uri
         // eg: /??dom.js,event.js , ? , should not be encoded
-        var config = success,
-            css = Utils.endsWith(url, '.css'),
-            error, timeout, attrs, callbacks, timer;
-
+        var config = success;
+        var css = Utils.endsWith(uri, '.css');
+        var error, timeout, attrs, callbacks, timer;
         if (typeof config === 'object') {
             success = config.success;
             error = config.error;
@@ -1297,87 +1160,73 @@ var KISSY = (function (undefined) {
             charset = config.charset;
             attrs = config.attrs;
         }
-
         if (css && Utils.ieMode < 10) {
             if (doc.getElementsByTagName('style').length + doc.getElementsByTagName('link').length >= 31) {
-                if (win.console) {
-                    win.console.error('style and link\'s number is more than 31.' +
-                        'ie < 10 can not insert link: ' + url);
-                }
+                setTimeout(function () {
+                    throw new Error('style and link\'s number is more than 31.' +
+                        'ie < 10 can not insert link: ' + uri);
+                }, 0);
                 if (error) {
                     error();
                 }
                 return;
             }
         }
-
-        callbacks = jsCssCallbacks[url] = jsCssCallbacks[url] || [];
-
+        callbacks = jsCssCallbacks[uri] = jsCssCallbacks[uri] || [];
         callbacks.push([success, error]);
-
         if (callbacks.length > 1) {
             return callbacks.node;
         }
-
-        var node = doc.createElement(css ? 'link' : 'script'),
-            clearTimer = function () {
-                if (timer) {
-                    clearTimeout(timer);
-                    timer = undefined;
-                }
-            };
-
+        var node = doc.createElement(css ? 'link' : 'script');
+        var clearTimer = function () {
+            if (timer) {
+                clearTimeout(timer);
+                timer = undefined;
+            }
+        };
         if (attrs) {
             Utils.each(attrs, function (v, n) {
                 node.setAttribute(n, v);
             });
         }
-
         if (charset) {
             node.charset = charset;
         }
-
         if (css) {
-            node.href = url;
+            node.href = uri;
             node.rel = 'stylesheet';
-            // set media to something non-matching to ensure it'll fetch without blocking render
-            // can not pass test
-            //node.media = 'async';
+            // can not set, else test fail
+            // node.media = 'async';
         } else {
-            node.src = url;
+            node.src = uri;
             node.async = true;
         }
-
         callbacks.node = node;
-
         var end = function (error) {
-            var index = error,
-                fn;
+            var index = error;
+            var fn;
             clearTimer();
-            Utils.each(jsCssCallbacks[url], function (callback) {
+            Utils.each(jsCssCallbacks[uri], function (callback) {
                 if ((fn = callback[index])) {
                     fn.call(node);
                 }
             });
-            delete jsCssCallbacks[url];
+            delete jsCssCallbacks[uri];
         };
-
         var useNative = 'onload' in node;
         // onload for webkit 535.23  Firefox 9.0
         // https://bugs.webkit.org/show_activity.cgi?id=38995
         // https://bugzilla.mozilla.org/show_bug.cgi?id=185236
         // https://developer.mozilla.org/en/HTML/Element/link#Stylesheet_load_events
         // phantomjs 1.7 == webkit 534.34
-        var forceCssPoll = S.Config.forceCssPoll ||
+        var forceCssPoll = mx.Config.forceCssPoll ||
             (webkit && webkit < 536) ||
             // unknown browser defaults to css poll
-            // https://github.com/kissyteam/kissy/issues/607
+            // https://github.com/kissyteam/modulex/issues/607
             (!webkit && !Utils.trident && !Utils.gecko);
-
         if (css && forceCssPoll && useNative) {
             useNative = false;
         }
-
         function onload() {
             var readyState = node.readyState;
             if (!readyState ||
@@ -1403,7 +1252,6 @@ var KISSY = (function (undefined) {
         } else {
             node.onreadystatechange = onload;
         }
-
         if (timeout) {
             timer = setTimeout(function () {
                 end(1);
@@ -1422,7 +1270,7 @@ var KISSY = (function (undefined) {
         }
         return node;
     };
-})(KISSY);
+})(modulex);
 /*
  yiminghe@gmail.com refactor@2012-03-29
  - 考虑连续重复请求单个 script 的情况，内部排队
@@ -1434,73 +1282,69 @@ var KISSY = (function (undefined) {
  */
 /**
  * @ignore
- * Declare config info for KISSY.
+ * Declare config info for modulex.
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    // --no-module-wrap--
-    var Loader = S.Loader,
-        Package = Loader.Package,
-        Utils = Loader.Utils,
-        host = S.Env.host,
-        Config = S.Config,
-        location = host.location,
-        configFns = Config.fns;
+(function (mx, undefined) {
+    var Loader = mx.Loader;
+    var Package = Loader.Package;
+    var Utils = Loader.Utils;
+    var host = mx.Env.host;
+    var Config = mx.Config;
+    var location = host.location;
+    var configFns = Config.fns;
 
     // how to load mods by path
     Config.loadModsFn = function (rs, config) {
-        S.getScript(rs.url, config);
+        mx.getScript(rs.uri, config);
     };
 
-    // how to get mod url
+    // how to get mod uri
     Config.resolveModFn = function (mod) {
-        var name = mod.name,
-            filter, t, url,
+        var id = mod.id;
+        var filter, t, uri;
         // deprecated! do not use path config
-            subPath = mod.path;
+        var subPath = mod.path;
         var packageInfo = mod.getPackage();
-
         if (!packageInfo) {
-            return name;
+            return id;
         }
-
         var packageBase = packageInfo.getBase();
         var packageName = packageInfo.name;
         var extname = mod.getType();
         var suffix = '.' + extname;
-
         if (!subPath) {
-            // special for css module
-            name = name.replace(/\.css$/, '');
+            if (Utils.endsWith(id, suffix)) {
+                id = id.slice(0, -suffix.length);
+            }
             filter = packageInfo.getFilter() || '';
 
             if (typeof filter === 'function') {
-                subPath = filter(name, extname);
+                subPath = filter(id, extname);
             } else if (typeof filter === 'string') {
                 if (filter) {
                     filter = '-' + filter;
                 }
-                subPath = name + filter + suffix;
+                subPath = id + filter + suffix;
             }
         }
-
         // core package
         if (packageName === 'core') {
-            url = packageBase + subPath;
-        } else if (name === packageName) {
+            uri = packageBase + subPath;
+        } else if (id === packageName) {
             // packageName: a/y use('a/y');
             // do not use this on production, can not be combo ed with other modules from same package
-            url = packageBase.substring(0, packageBase.length - 1) + filter + suffix;
+            uri = packageBase.substring(0, packageBase.length - 1) + filter + suffix;
         } else {
             subPath = subPath.substring(packageName.length + 1);
-            url = packageBase + subPath;
+            uri = packageBase + subPath;
         }
 
         if ((t = mod.getTag())) {
             t += suffix;
-            url += '?t=' + t;
+            uri += '?t=' + t;
         }
-        return url;
+        return uri;
     };
 
     configFns.requires = shortcut('requires');
@@ -1508,8 +1352,10 @@ var KISSY = (function (undefined) {
     configFns.alias = shortcut('alias');
 
     configFns.packages = function (config) {
-        var Config = this.Config,
-            packages = Config.packages;
+        var packages = Config.packages;
+        if (config === undefined) {
+            return packages;
+        }
         if (config) {
             Utils.each(config, function (cfg, key) {
                 // object type
@@ -1525,46 +1371,37 @@ var KISSY = (function (undefined) {
                 }
             });
             return undefined;
-        } else if (config === false) {
+        } else {
             Config.packages = {
                 core: packages.core
             };
             return undefined;
-        } else {
-            return packages;
         }
     };
 
     configFns.modules = function (modules) {
         if (modules) {
-            Utils.each(modules, function (modCfg, modName) {
-                var url = modCfg.url;
-                if (url) {
-                    modCfg.url = normalizePath(url);
+            Utils.each(modules, function (modCfg, id) {
+                var uri = modCfg.uri;
+                if (uri) {
+                    modCfg.uri = normalizePath(uri);
                 }
-                var mod = Utils.createModule(modName, modCfg);
-                // #485, invalid after add
-                if (mod.status === Loader.Status.INIT) {
-                    Utils.mix(mod, modCfg);
-                }
+                Utils.createModule(id, modCfg);
             });
         }
     };
 
     configFns.base = function (base) {
-        var self = this,
-            corePackage = Config.packages.core;
-
+        var self = this;
+        var corePackage = Config.packages.core;
         if (!base) {
             return corePackage && corePackage.getBase();
         }
-
         self.config('packages', {
             core: {
                 base: base
             }
         });
-
         return undefined;
     };
 
@@ -1575,7 +1412,7 @@ var KISSY = (function (undefined) {
                 newCfg[name] = {};
                 newCfg[name][attr] = config[name];
             }
-            S.config('modules', newCfg);
+            mx.config('modules', newCfg);
         };
     }
 
@@ -1586,6 +1423,7 @@ var KISSY = (function (undefined) {
         }
         if (location) {
             if (Utils.startsWith(base, 'http:') ||
+                Utils.startsWith(base, '//') ||
                 Utils.startsWith(base, 'https:') ||
                 Utils.startsWith(base, 'file:')) {
                 return base;
@@ -1594,32 +1432,30 @@ var KISSY = (function (undefined) {
         }
         return base;
     }
-})(KISSY);
+})(modulex);
+
 /**
- * combo loader for KISSY. using combo to load module files.
+ * combo loader. using combo to load module files.
  * @ignore
  * @author yiminghe@gmail.com
  */
-(function (S, undefined) {
-    // --no-module-wrap--
-    var logger = S.getLogger('s/loader');
-
-    var Loader = S.Loader,
-        Config = S.Config,
-        Status = Loader.Status,
-        Utils = Loader.Utils,
-        addModule = Utils.addModule,
-        each = Utils.each,
-        getHash = Utils.getHash,
-        LOADING = Status.LOADING,
-        LOADED = Status.LOADED,
-        ERROR = Status.ERROR,
-        oldIE = Utils.ieMode && Utils.ieMode < 10;
+(function (mx, undefined) {
+    var Loader = mx.Loader;
+    var Config = mx.Config;
+    var Status = Loader.Status;
+    var Utils = Loader.Utils;
+    var addModule = Utils.addModule;
+    var each = Utils.each;
+    var getHash = Utils.getHash;
+    var LOADING = Status.LOADING;
+    var LOADED = Status.LOADED;
+    var ERROR = Status.ERROR;
+    var oldIE = Utils.ieMode && Utils.ieMode < 10;
 
     function loadScripts(rss, callback, timeout) {
-        var count = rss && rss.length,
-            errorList = [],
-            successList = [];
+        var count = rss && rss.length;
+        var errorList = [];
+        var successList = [];
 
         function complete() {
             if (!(--count)) {
@@ -1634,9 +1470,8 @@ var KISSY = (function (undefined) {
                 success: function () {
                     successList.push(rs);
                     if (mod && currentMod) {
-                        // standard browser(except ie9) fire load after KISSY.add immediately
-                        logger.debug('standard browser get mod name after load: ' + mod.name);
-                        addModule(mod.name, currentMod.factory, currentMod.config);
+                        // standard browser(except ie9) fire load after modulex.add immediately
+                        addModule(mod.id, currentMod.factory, currentMod.config);
                         currentMod = undefined;
                     }
                     complete();
@@ -1652,12 +1487,12 @@ var KISSY = (function (undefined) {
                 if (mod.getType() === 'css') {
                     mod = undefined;
                 } else if (oldIE) {
-                    startLoadModName = mod.name;
+                    startLoadModId = mod.id;
                     if ('@DEBUG@') {
                         startLoadModTime = +new Date();
                     }
                     config.attrs = {
-                        'data-mod-name': mod.name
+                        'data-mod-id': mod.id
                     };
                 }
             }
@@ -1668,7 +1503,7 @@ var KISSY = (function (undefined) {
     var loaderId = 0;
 
     /**
-     * @class KISSY.Loader.ComboLoader
+     * @class modulex.Loader.ComboLoader
      * using combo to load module files
      * @param callback
      * @private
@@ -1680,20 +1515,20 @@ var KISSY = (function (undefined) {
     }
 
     var currentMod;
-    var startLoadModName;
+    var startLoadModId;
     var startLoadModTime;
 
-    function checkKISSYRequire(config, factory) {
+    function checkRequire(config, factory) {
         // use require primitive statement
-        // function(S, require){ require('node') }
-        if (!config && typeof factory === 'function' && factory.length > 1) {
+        // function(mx, require){ require('node') }
+        if (!config && typeof factory === 'function') {
             var requires = Utils.getRequiresFromFn(factory);
             if (requires.length) {
                 config = config || {};
                 config.requires = requires;
             }
         } else {
-            // KISSY.add(function(){},{requires:[]})
+            // modulex.add(function(){},{requires:[]})
             if (config && config.requires && !config.cjs) {
                 config.cjs = 0;
             }
@@ -1701,51 +1536,64 @@ var KISSY = (function (undefined) {
         return config;
     }
 
-    ComboLoader.add = function (name, factory, config, argsLen) {
-        // KISSY.add('xx',[],function(){});
+    function adaptRequirejs(requires) {
+        var ret = [];
+        var i, r, len;
+        for (i = 0, len = requires.length; i < len; i++) {
+            r = requires[i];
+            if (r === 'exports' || r === 'module' || r === 'require') {
+
+            } else {
+                ret.push(r);
+            }
+        }
+        return ret;
+    }
+
+    ComboLoader.add = function (id, factory, config, argsLen) {
+        // modulex.add('xx',[],function(){});
         if (argsLen === 3 && Utils.isArray(factory)) {
             var tmp = factory;
             factory = config;
             config = {
-                requires: tmp,
+                requires: adaptRequirejs(tmp),
                 cjs: 1
             };
         }
-        // KISSY.add(function(){}), KISSY.add('a'), KISSY.add(function(){},{requires:[]})
-        if (typeof name === 'function' || argsLen === 1) {
+        // modulex.add(function(){}), modulex.add('a'), modulex.add(function(){},{requires:[]})
+        if (typeof id === 'function' || argsLen === 1) {
             config = factory;
-            factory = name;
-            config = checkKISSYRequire(config, factory);
+            factory = id;
+            config = checkRequire(config, factory);
             if (oldIE) {
                 // http://groups.google.com/group/commonjs/browse_thread/thread/5a3358ece35e688e/43145ceccfb1dc02#43145ceccfb1dc02
-                name = findModuleNameByInteractive();
-                // S.log('oldIE get modName by interactive: ' + name);
-                addModule(name, factory, config);
-                startLoadModName = null;
+                id = findModuleIdByInteractive();
+                addModule(id, factory, config);
+                startLoadModId = null;
                 startLoadModTime = 0;
             } else {
-                // standard browser associates name with definition when onload
+                // standard browser associates id with definition when onload
                 currentMod = {
                     factory: factory,
                     config: config
                 };
             }
         } else {
-            // KISSY.add('x',function(){},{requires:[]})
+            // modulex.add('x',function(){},{requires:[]})
             if (oldIE) {
-                startLoadModName = null;
+                startLoadModId = null;
                 startLoadModTime = 0;
             } else {
                 currentMod = undefined;
             }
-            config = checkKISSYRequire(config, factory);
-            addModule(name, factory, config);
+            config = checkRequire(config, factory);
+            addModule(id, factory, config);
         }
     };
 
-    function findModuleNameByInteractive() {
-        var scripts = document.getElementsByTagName('script'),
-            re, i, name, script;
+    function findModuleIdByInteractive() {
+        var scripts = document.getElementsByTagName('script');
+        var re, i, id, script;
 
         for (i = scripts.length - 1; i >= 0; i--) {
             script = scripts[i];
@@ -1756,18 +1604,16 @@ var KISSY = (function (undefined) {
         }
 
         if (re) {
-            name = re.getAttribute('data-mod-name');
+            id = re.getAttribute('data-mod-id');
         } else {
             // sometimes when read module file from cache,
             // interactive status is not triggered
             // module code is executed right after inserting into dom
             // i has to preserve module name before insert module script into dom,
             // then get it back here
-            logger.debug('can not find interactive script,time diff : ' + (+new Date() - startLoadModTime));
-            logger.debug('old_ie get mod name from cache : ' + startLoadModName);
-            name = startLoadModName;
+            id = startLoadModId;
         }
-        return name;
+        return id;
     }
 
     var debugRemoteModules;
@@ -1778,12 +1624,9 @@ var KISSY = (function (undefined) {
                 var ms = [];
                 each(rs.mods, function (m) {
                     if (m.status === LOADED) {
-                        ms.push(m.name);
+                        ms.push(m.id);
                     }
                 });
-                if (ms.length) {
-                    logger.info('load remote modules: "' + ms.join(', ') + '" from: "' + rs.url + '"');
-                }
             });
         };
     }
@@ -1810,16 +1653,16 @@ var KISSY = (function (undefined) {
     // ??editor/plugin/x,editor/plugin/b
     // =>
     // editor/plugin/??x,b
-    function getUrlConsiderCommonPrefix(commonPrefix, currentComboUrls, basePrefix, comboPrefix, comboSep, suffix) {
-        if (commonPrefix && currentComboUrls.length > 1) {
+    function getUriConsiderCommonPrefix(commonPrefix, currentComboUris, basePrefix, comboPrefix, comboSep, suffix) {
+        if (commonPrefix && currentComboUris.length > 1) {
             var commonPrefixLen = commonPrefix.length;
-            var currentUrls = [];
-            for (var i = 0; i < currentComboUrls.length; i++) {
-                currentUrls[i] = currentComboUrls[i].substring(commonPrefixLen);
+            var currentUris = [];
+            for (var i = 0; i < currentComboUris.length; i++) {
+                currentUris[i] = currentComboUris[i].substring(commonPrefixLen);
             }
-            return basePrefix + commonPrefix + comboPrefix + currentUrls.join(comboSep) + suffix;
+            return basePrefix + commonPrefix + comboPrefix + currentUris.join(comboSep) + suffix;
         } else {
-            return basePrefix + comboPrefix + currentComboUrls.join(comboSep) + suffix;
+            return basePrefix + comboPrefix + currentComboUris.join(comboSep) + suffix;
         }
     }
 
@@ -1828,22 +1671,22 @@ var KISSY = (function (undefined) {
          * load modules asynchronously
          */
         use: function (allMods) {
-            var self = this,
-                comboUrls,
-                timeout = Config.timeout;
+            var self = this;
+            var comboUris;
+            var timeout = Config.timeout;
 
-            comboUrls = self.getComboUrls(allMods);
+            comboUris = self.getComboUris(allMods);
 
             // load css first to avoid page blink
-            if (comboUrls.css) {
-                loadScripts(comboUrls.css, function (success, error) {
+            if (comboUris.css) {
+                loadScripts(comboUris.css, function (success, error) {
                     if ('@DEBUG@') {
                         debugRemoteModules(success);
                     }
 
                     each(success, function (one) {
                         each(one.mods, function (mod) {
-                            addModule(mod.name, Utils.noop);
+                            addModule(mod.id, Utils.noop);
                             // notify all loader instance
                             mod.flush();
                         });
@@ -1851,9 +1694,21 @@ var KISSY = (function (undefined) {
 
                     each(error, function (one) {
                         each(one.mods, function (mod) {
-                            var msg = mod.name + ' is not loaded! can not find module in url: ' + one.url;
-                            S.log(msg, 'error');
+                            var msg = mod.id + ' is not loaded! can not find module in uri: ' + one.uri;
+                            console.error(msg);
                             mod.status = ERROR;
+                            var error = {
+                                type: 'load',
+                                exception: msg,
+                                module: mod
+                            };
+                            mod.error = error;
+                            if (mod.onError) {
+                                mod.onError(error);
+                            }
+                            if (Config.onModuleError) {
+                                Config.onModuleError(error);
+                            }
                             // notify all loader instance
                             mod.flush();
                         });
@@ -1862,22 +1717,34 @@ var KISSY = (function (undefined) {
             }
 
             // jss css download in parallel
-            if (comboUrls.js) {
-                loadScripts(comboUrls.js, function (success) {
+            if (comboUris.js) {
+                loadScripts(comboUris.js, function (success) {
                     if ('@DEBUG@') {
                         debugRemoteModules(success);
                     }
 
-                    each(comboUrls.js, function (one) {
+                    each(comboUris.js, function (one) {
                         each(one.mods, function (mod) {
                             // fix #111
-                            // https://github.com/kissyteam/kissy/issues/111
+                            // https://github.com/kissyteam/modulex/issues/111
                             if (!mod.factory) {
-                                var msg = mod.name +
-                                    ' is not loaded! can not find module in url: ' +
-                                    one.url;
-                                S.log(msg, 'error');
+                                var msg = mod.id +
+                                    ' is not loaded! can not find module in uri: ' +
+                                    one.uri;
+                                console.error(msg);
                                 mod.status = ERROR;
+                                var error = {
+                                    type: 'load',
+                                    exception: msg,
+                                    module: mod
+                                };
+                                mod.error = error;
+                                if (mod.onError) {
+                                    mod.onError(error);
+                                }
+                                if (Config.onModuleError) {
+                                    Config.onModuleError(error);
+                                }
                             }
                             // notify all loader instance
                             mod.flush();
@@ -1891,9 +1758,9 @@ var KISSY = (function (undefined) {
          * calculate dependency
          */
         calculate: function (unloadedMods, errorList, stack, cache, ret) {
-            var i, m, mod, modStatus,
-                stackDepth,
-                self = this;
+            var i, m, mod,
+                modStatus, stackDepth;
+            var self = this;
 
             if ('@DEBUG@') {
                 stack = stack || [];
@@ -1905,7 +1772,7 @@ var KISSY = (function (undefined) {
 
             for (i = 0; i < unloadedMods.length; i++) {
                 mod = unloadedMods[i];
-                m = mod.name;
+                m = mod.id;
 
                 if (cache[m]) {
                     continue;
@@ -1936,7 +1803,7 @@ var KISSY = (function (undefined) {
                 if ('@DEBUG@') {
                     // do not use indexOf, poor performance in ie8
                     if (stack[m]) {
-                        S.log('find cyclic dependency between mods: ' + stack, 'warn');
+                        console.warn('find cyclic dependency between mods: ' + stack);
                         cache[m] = 1;
                         continue;
                     } else {
@@ -1962,10 +1829,10 @@ var KISSY = (function (undefined) {
          * get combo mods for modNames
          */
         getComboMods: function (mods) {
-            var i, l = mods.length,
-                tmpMods, mod, packageInfo, type,
+            var i, tmpMods, mod, packageInfo, type,
                 tag, charset, packageBase,
-                packageName, group, modUrl;
+                packageName, group, modUri;
+            var l = mods.length;
             var groups = {
                 /*
                  js: {
@@ -1985,7 +1852,7 @@ var KISSY = (function (undefined) {
             for (i = 0; i < l; ++i) {
                 mod = mods[i];
                 type = mod.getType();
-                modUrl = mod.getUrl();
+                modUri = mod.getUri();
                 packageInfo = mod.getPackage();
 
                 if (packageInfo) {
@@ -1995,7 +1862,7 @@ var KISSY = (function (undefined) {
                     tag = packageInfo.getTag();
                     group = packageInfo.getGroup();
                 } else {
-                    packageBase = mod.name;
+                    packageBase = mod.id;
                 }
 
                 if (packageInfo && packageInfo.isCombine() && group) {
@@ -2043,53 +1910,52 @@ var KISSY = (function (undefined) {
         },
 
         /**
-         * Get combo urls
+         * Get combo uris
          */
-        getComboUrls: function (mods) {
-            var comboPrefix = Config.comboPrefix,
-                comboSep = Config.comboSep,
-                comboRes = {},
-                maxFileNum = Config.comboMaxFileNum,
-                maxUrlLength = Config.comboMaxUrlLength;
-
+        getComboUris: function (mods) {
+            var comboPrefix = Config.comboPrefix;
+            var comboSep = Config.comboSep;
+            var comboRes = {};
+            var maxFileNum = Config.comboMaxFileNum;
+            var maxUriLength = Config.comboMaxUriLength;
             var comboMods = this.getComboMods(mods);
 
-            function processSamePrefixUrlMods(type, basePrefix, sendMods) {
-                var currentComboUrls = [];
+            function processSamePrefixUriMods(type, basePrefix, sendMods) {
+                var currentComboUris = [];
                 var currentComboMods = [];
                 var tag = sendMods.tag;
                 var charset = sendMods.charset;
                 var suffix = (tag ? '?t=' + encodeURIComponent(tag) + '.' + type : '');
 
-                var baseLen = basePrefix.length,
-                    commonPrefix,
-                    res = [];
+                var baseLen = basePrefix.length;
+                var commonPrefix;
+                var res = [];
 
                 /*jshint loopfunc:true*/
-                function pushComboUrl(sentUrl) {
+                function pushComboUri(sentUri) {
                     //noinspection JSReferencingMutableVariableFromClosure
                     res.push({
                         combine: 1,
-                        url: sentUrl,
+                        uri: sentUri,
                         charset: charset,
                         mods: currentComboMods
                     });
                 }
 
-                function getSentUrl() {
-                    return getUrlConsiderCommonPrefix(commonPrefix, currentComboUrls,
+                function getSentUri() {
+                    return getUriConsiderCommonPrefix(commonPrefix, currentComboUris,
                         basePrefix, comboPrefix, comboSep, suffix);
                 }
 
                 for (var i = 0; i < sendMods.length; i++) {
                     var currentMod = sendMods[i];
-                    var url = currentMod.getUrl();
+                    var uri = currentMod.getUri();
                     if (!currentMod.getPackage() || !currentMod.getPackage().isCombine() ||
                         // use(x/y) packageName: x/y ...
-                        !Utils.startsWith(url, basePrefix)) {
+                        !Utils.startsWith(uri, basePrefix)) {
                         res.push({
                             combine: 0,
-                            url: url,
+                            uri: uri,
                             charset: charset,
                             mods: [currentMod]
                         });
@@ -2097,8 +1963,8 @@ var KISSY = (function (undefined) {
                     }
 
                     // ignore query parameter
-                    var subPath = url.slice(baseLen).replace(/\?.*$/, '');
-                    currentComboUrls.push(subPath);
+                    var subPath = uri.slice(baseLen).replace(/\?.*$/, '');
+                    currentComboUris.push(subPath);
                     currentComboMods.push(currentMod);
 
                     if (commonPrefix === undefined) {
@@ -2110,56 +1976,57 @@ var KISSY = (function (undefined) {
                         }
                     }
 
-                    if (currentComboUrls.length > maxFileNum || getSentUrl().length > maxUrlLength) {
-                        currentComboUrls.pop();
+                    if (currentComboUris.length > maxFileNum || getSentUri().length > maxUriLength) {
+                        currentComboUris.pop();
                         currentComboMods.pop();
-                        pushComboUrl(getSentUrl());
-                        currentComboUrls = [];
+                        pushComboUri(getSentUri());
+                        currentComboUris = [];
                         currentComboMods = [];
                         commonPrefix = undefined;
                         i--;
                     }
                 }
-                if (currentComboUrls.length) {
-                    pushComboUrl(getSentUrl());
+                if (currentComboUris.length) {
+                    pushComboUri(getSentUri());
                 }
 
                 comboRes[type].push.apply(comboRes[type], res);
             }
 
-            var type, prefix;
+            var type, prefix, group;
             var normals = comboMods.normals;
             var groups = comboMods.groups;
-            var group;
 
-            // generate combo urls
+            // generate combo uris
             for (type in normals) {
                 comboRes[type] = comboRes[type] || [];
                 for (prefix in normals[type]) {
-                    processSamePrefixUrlMods(type, prefix, normals[type][prefix]);
+                    processSamePrefixUriMods(type, prefix, normals[type][prefix]);
                 }
             }
+
             for (type in groups) {
                 comboRes[type] = comboRes[type] || [];
                 for (group in groups[type]) {
                     for (prefix in groups[type][group]) {
-                        processSamePrefixUrlMods(type, prefix, groups[type][group][prefix]);
+                        processSamePrefixUriMods(type, prefix, groups[type][group][prefix]);
                     }
                 }
             }
+
             return comboRes;
         },
 
         flush: function () {
-            if (!this.callback) {
+            var self = this;
+            if (!self.callback) {
                 return;
             }
-            var self = this,
-                head = self.head,
-                callback = self.callback;
+            var head = self.head;
+            var callback = self.callback;
             while (head) {
-                var node = head.node,
-                    status = node.status;
+                var node = head.node;
+                var status = node.status;
                 if (status >= LOADED || status === ERROR) {
                     node.remove(self);
                     head = self.head = head.next;
@@ -2192,7 +2059,7 @@ var KISSY = (function (undefined) {
     });
 
     Loader.ComboLoader = ComboLoader;
-})(KISSY);
+})(modulex);
 /*
  2014-03-24 yiminghe@gmail.com
  - refactor group combo logic
@@ -2212,132 +2079,132 @@ var KISSY = (function (undefined) {
 
  2012-02-20 yiminghe@gmail.com
  - three status
- 0: initialized
+ UNLOADED
  LOADED: load into page
- ATTACHED: factory executed
- *//**
+ INITIALIZED: factory executed
+ */
+/**
  * @ignore
- * mix loader into KISSY and infer KISSY baseUrl if not set
+ * init loader, set config
  * @author yiminghe@gmail.com
  */
-(function (S) {
-    // --no-module-wrap--
-    var Loader = S.Loader,
-        Utils = Loader.Utils,
-        createModule = Utils.createModule,
-        ComboLoader = Loader.ComboLoader;
-    var logger = S.getLogger('s/loader');
+(function (mx) {
+    var doc = mx.Env.host && mx.Env.host.document;
+    var defaultComboPrefix = '??';
+    var defaultComboSep = ',';
+    var Loader = mx.Loader;
+    var Utils = Loader.Utils;
+    var createModule = Utils.createModule;
+    var ComboLoader = Loader.ComboLoader;
 
-    Utils.mix(S, {
+    Utils.mix(mx, {
         // internal usage
-        getModule: function (modName) {
-            return createModule(modName);
+        getModule: function (id) {
+            return createModule(id);
         },
 
         // internal usage
         getPackage: function (packageName) {
-            return S.Config.packages[packageName];
+            return mx.Config.packages[packageName];
         },
 
         /**
-         * Registers a module with the KISSY global.
-         * @param {String} name module name.
-         * it must be set if combine is true in {@link KISSY#config}
+         * Registers a module with the modulex global.
+         * @param {String} id module id.
+         * it must be set if combine is true in {@link modulex#config}
          * @param {Function} factory module definition function that is used to return
          * exports of this module
-         * @param {KISSY} factory.S KISSY global instance
+         * @param {modulex} factory.mx modulex global instance
          * @param {Object} [cfg] module optional config data
          * @param {String[]} cfg.requires this module's required module name list
-         * @member KISSY
+         * @member modulex
          *
          *
          *      // dom module's definition
-         *      KISSY.add('dom', function(S, xx){
+         *      modulex.add('dom', function(mx, xx){
          *          return {css: function(el, name, val){}};
          *      },{
          *          requires:['xx']
          *      });
          */
-        add: function (name, factory, cfg) {
-            ComboLoader.add(name, factory, cfg, arguments.length);
+        add: function (id, factory, cfg) {
+            ComboLoader.add(id, factory, cfg, arguments.length);
         },
+
         /**
-         * Attached one or more modules to global KISSY instance.
-         * @param {String|String[]} modNames moduleNames. 1-n modules to bind(use comma to separate)
+         * initialize one or more modules
+         * @param {String|String[]} modIds 1-n modules to bind(use comma to separate)
          * @param {Function} success callback function executed
-         * when KISSY has the required functionality.
-         * @param {KISSY} success.S KISSY instance
+         * when modulex has the required functionality.
+         * @param {Function} error callback function executed
+         * when modulex has the required functionality.
+         * @param {modulex} success.mx modulex instance
          * @param success.x... modules exports
-         * @member KISSY
+         * @member modulex
          *
          *
-         *      // loads and attached overlay,dd and its dependencies
-         *      KISSY.use('overlay,dd', function(S, Overlay){});
+         *      // loads and initialize overlay dd and its dependencies
+         *      modulex.use(['overlay','dd'], function(mx, Overlay){});
          */
-        use: function (modNames, success) {
-            var loader,
-                error,
-                tryCount = 0;
-
-            if (typeof modNames === 'string') {
-                S.log('KISSY.use\'s first argument should be Array, but now: ' + modNames, 'warning');
-                modNames = modNames.replace(/\s+/g, '').split(',');
+        use: function (modIds, success, error) {
+            var loader;
+            var tryCount = 0;
+            if (typeof modIds === 'string') {
+                modIds = modIds.split(/\s*,\s*/);
             }
-
             if (typeof success === 'object') {
                 //noinspection JSUnresolvedVariable
                 error = success.error;
                 //noinspection JSUnresolvedVariable
                 success = success.success;
             }
-
-            var mods = Utils.createModules(modNames);
-
+            var mods = Utils.createModules(modIds);
             var unloadedMods = [];
-
             Utils.each(mods, function (mod) {
                 unloadedMods.push.apply(unloadedMods, mod.getNormalizedModules());
             });
 
-            var normalizedMods = unloadedMods;
+            function processError(errorList, action) {
+                console.error('modulex: ' + action + ' the following modules error');
+                console.error(Utils.map(errorList, function (e) {
+                    return e.id;
+                }));
+                if (error) {
+                    if ('@DEBUG@') {
+                        error.apply(mx, errorList);
+                    } else {
+                        try {
+                            error.apply(mx, errorList);
+                        } catch (e) {
+                            /*jshint loopfunc:true*/
+                            setTimeout(function () {
+                                throw e;
+                            }, 0);
+                        }
+                    }
+                    error = null;
+                }
+            }
 
             function loadReady() {
                 ++tryCount;
-                var errorList = [],
-                    start;
-
-                if ('@DEBUG@') {
-                    start = +new Date();
-                }
-
-                unloadedMods = loader.calculate(unloadedMods, errorList);
-                var unloadModsLen = unloadedMods.length;
-                logger.debug(tryCount + ' check duration ' + (+new Date() - start));
+                var errorList = [];
+                // get error from last round of load
+                // important! can not replace unloadedMods with nextToLoadMods
+                var nextToLoadMods = loader.calculate(unloadedMods, errorList);
                 if (errorList.length) {
-                    S.log(errorList, 'error');
-                    S.log('loader: load above modules error', 'error');
-                    if (error) {
-                        if ('@DEBUG@') {
-                            error.apply(S, errorList);
-                        } else {
-                            try {
-                                error.apply(S, errorList);
-                            } catch (e) {
-                                /*jshint loopfunc:true*/
-                                setTimeout(function () {
-                                    throw e;
-                                }, 0);
-                            }
-                        }
-                    }
+                    // note: at combo mode  a depends b if b error, then a error two, only return a
+                    processError(errorList, 'load');
                 } else if (loader.isCompleteLoading()) {
-                    Utils.attachModules(normalizedMods);
-                    if (success) {
+                    var isInitSuccess = Utils.initModules(unloadedMods);
+                    if (!isInitSuccess) {
+                        processError(Utils.collectErrors(unloadedMods), 'init');
+                    } else if (success) {
                         if ('@DEBUG@') {
-                            success.apply(S, [S].concat(Utils.getModulesExports(mods)));
+                            success.apply(mx, Utils.getModulesExports(mods));
                         } else {
                             try {
-                                success.apply(S, [S].concat(Utils.getModulesExports(mods)));
+                                success.apply(mx, Utils.getModulesExports(mods));
                             } catch (e) {
                                 /*jshint loopfunc:true*/
                                 setTimeout(function () {
@@ -2345,569 +2212,770 @@ var KISSY = (function (undefined) {
                                 }, 0);
                             }
                         }
+                        success = null;
                     }
                 } else {
                     // in case all of its required mods is loading by other loaders
                     loader.callback = loadReady;
-                    if (unloadModsLen) {
-                        logger.debug(tryCount + ' reload ');
-                        loader.use(unloadedMods);
+                    if (nextToLoadMods.length) {
+                        loader.use(nextToLoadMods);
                     }
                 }
             }
 
             loader = new ComboLoader(loadReady);
-
             // in case modules is loaded statically
             // synchronous check
             // but always async for loader
             loadReady();
-            return S;
+            return mx;
         },
 
         /**
-         * get module exports from KISSY module cache
-         * @param {String} moduleName module name
-         * @member KISSY
+         * get module exports from modulex module cache
+         * @param {String} id module id
+         * @member modulex
          * @return {*} exports of specified module
          */
-        require: function (moduleName) {
-            var requiresModule = createModule(moduleName);
-            return requiresModule.getExports();
+        require: function (id) {
+            return createModule(id).getExports();
         },
 
         /**
          * undefine a module
-         * @param {String} moduleName module name
-         * @member KISSY
+         * @param {String} id module id
+         * @member modulex
          */
-        undef: function (moduleName) {
-            var requiresModule = createModule(moduleName);
+        undef: function (id) {
+            var requiresModule = createModule(id);
             var mods = requiresModule.getNormalizedModules();
             Utils.each(mods, function (m) {
                 m.undef();
             });
         }
     });
-})(KISSY);
-
-/*
- 2013-06-04 yiminghe@gmail.com
- - refactor merge combo loader and simple loader
- - support error callback
- *//**
- * @ignore
- * i18n plugin for kissy loader
- * @author yiminghe@gmail.com
- */
-KISSY.add('i18n', {
-    alias: function (S, name) {
-        return name + '/i18n/' + S.Config.lang;
-    }
-});/**
- * @ignore
- * init loader, set config
- * @author yiminghe@gmail.com
- */
-(function (S) {
-    // --no-module-wrap--
-    var doc = S.Env.host && S.Env.host.document;
-    // var logger = S.getLogger('s/loader');
-    var Utils = S.Loader.Utils;
-    var TIMESTAMP = '20140813183328';
-    var defaultComboPrefix = '??';
-    var defaultComboSep = ',';
 
     function returnJson(s) {
         /*jshint evil:true*/
         return (new Function('return ' + s))();
     }
 
-    var baseReg = /^(.*)(seed|loader)(?:-debug|-coverage)?\.js[^/]*/i,
-        baseTestReg = /(seed|loader)(?:-debug|-coverage)?\.js/i;
-
-    function getBaseInfoFromOneScript(script) {
-        // can not use KISSY.Uri
-        // /??x.js,dom.js for tbcdn
+    function getBaseInfoFromOneScript(script, name) {
+        var baseReg = new RegExp('^(.*)(' + name + ')(?:-debug|)?\\.js[^/]*', 'i');
+        var baseTestReg = new RegExp('(' + name + ')(?:-debug|)?\\.js', 'i');
         var src = script.src || '';
         if (!src.match(baseTestReg)) {
             return 0;
         }
-
         var baseInfo = script.getAttribute('data-config');
-
         if (baseInfo) {
             baseInfo = returnJson(baseInfo);
         } else {
             baseInfo = {};
         }
-
         var comboPrefix = baseInfo.comboPrefix || defaultComboPrefix;
         var comboSep = baseInfo.comboSep || defaultComboSep;
-
-        var parts,
-            base,
-            index = src.indexOf(comboPrefix);
-
+        var parts, base;
+        var index = src.indexOf(comboPrefix);
         // no combo
         if (index === -1) {
             base = src.replace(baseReg, '$1');
         } else {
             base = src.substring(0, index);
-            // a.tbcdn.cn??y.js, ie does not insert / after host
-            // a.tbcdn.cn/combo? comboPrefix=/combo?
             if (base.charAt(base.length - 1) !== '/') {
                 base += '/';
             }
             parts = src.substring(index + comboPrefix.length).split(comboSep);
-            Utils.each(parts, function (part) {
+            for (var i = 0, l = parts.length; i < l; i++) {
+                var part = parts[i];
                 if (part.match(baseTestReg)) {
                     base += part.replace(baseReg, '$1');
-                    return false;
+                    break;
                 }
-                return undefined;
-            });
-        }
-
-        if (!('tag' in baseInfo)) {
-            var queryIndex = src.lastIndexOf('?t=');
-            if (queryIndex !== -1) {
-                var query = src.substring(queryIndex + 1);
-                // kissy 's tag will be determined by build time and user specified tag
-                baseInfo.tag = Utils.getHash(TIMESTAMP + query);
             }
         }
-
         baseInfo.base = baseInfo.base || base;
-
         return baseInfo;
     }
 
     /**
-     * get base from seed-debug.js
-     * @return {Object} base for kissy
+     * get base from modulex
      * @ignore
      *
      * for example:
      *      @example
-     *      http://a.tbcdn.cn/??s/kissy/x.y.z/seed-min.js,p/global/global.js
+     *      http://x.com/modulex.js
      *      note about custom combo rules, such as yui3:
      *      combo-prefix='combo?' combo-sep='&'
      */
-    function getBaseInfo() {
+    function getBaseInfo(name) {
         // get base from current script file path
         // notice: timestamp
-        var scripts = doc.getElementsByTagName('script'),
-            i,
-            info;
+        var scripts = doc.getElementsByTagName('script');
+        var i, info;
 
         for (i = scripts.length - 1; i >= 0; i--) {
-            if ((info = getBaseInfoFromOneScript(scripts[i]))) {
+            if ((info = getBaseInfoFromOneScript(scripts[i], name))) {
                 return info;
             }
         }
-
-        var msg = 'must load kissy by file name in browser environment: ' +
-            'seed-debug.js or seed.js loader.js or loader-debug.js';
-
-        S.log(msg, 'error');
         return null;
     }
 
-    S.config({
+    mx.config({
         comboPrefix: defaultComboPrefix,
         comboSep: defaultComboSep,
         charset: 'utf-8',
         filter: '',
         lang: 'zh-cn'
     });
-    S.config('packages', {
+
+    mx.init = function (cfg) {
+        var name = cfg.name;
+        mx.config(getBaseInfo(name));
+    };
+
+    mx.config('packages', {
         core: {
-            filter: S.Config.debug ? 'debug' : ''
+            filter: '@DEBUG@' ? 'debug' : '',
+            base: '.'
         }
     });
+
     // ejecta
     if (doc && doc.getElementsByTagName) {
         // will transform base to absolute path
-        S.config(Utils.mix({
-            // 2k(2048) url length
-            comboMaxUrlLength: 2000,
-            // file limit number for a single combo url
+        mx.config(Utils.mix({
+            // 2k(2048) uri length
+            comboMaxUriLength: 2000,
+            // file limit number for a single combo uri
             comboMaxFileNum: 40
-        }, getBaseInfo()));
+        }, getBaseInfo('modulex')));
     }
 
-    S.add('logger-manager', function () {
-        return S.LoggerMangaer;
-    });
-})(KISSY);
-/*
-Copyright 2014, KISSY v5.0.0
+    if (typeof global === 'undefined' && typeof window !== 'undefined') {
+        var win = window;
+        var require = win.require;
+        win.require = modulex.use;
+        win.require.config = modulex.config;
+        var define = win.define;
+        win.define = modulex.add;
+        mx.noConflict = function () {
+            win.require = require;
+            win.define = define;
+        };
+    }
+})(modulex);
+/**
+ * @ignore
+ * i18n plugin for modulex loader
+ * @author yiminghe@gmail.com
+ */
+modulex.add('i18n', {
+    alias: function (mx, id) {
+        return id + '/i18n/' + mx.Config.lang;
+    }
+});/*
+Copyright 2014, modulex-feature@1.0.3
 MIT Licensed
-build time: Jul 18 14:05
+build time: Thu, 16 Oct 2014 04:01:31 GMT
+*/
+/*
+combined modules:
+feature
+*/
+modulex.add("feature", [], function(require, exports, module) {/**
+ * @ignore
+ * detect if current browser supports various features.
+ * @author yiminghe@gmail.com
+ */
+var win = window;
+var propertyPrefixes = [
+    'Webkit',
+    'Moz',
+    'O',
+    // ms is special .... !
+    'ms'
+];
+var propertyPrefixesLength = propertyPrefixes.length;
+// for nodejs
+var doc = win.document || {};
+var isMsPointerSupported, documentElementStyle,
+// ie11
+    isPointerSupported, isTransform3dSupported;
+// nodejs
+var documentElement = doc && doc.documentElement;
+var isClassListSupportedState = true;
+var isQuerySelectorSupportedState = false;
+// phantomjs issue: http://code.google.com/p/phantomjs/issues/detail?id=375
+var isTouchEventSupportedState = ('ontouchstart' in doc) && !(window.callPhantom);
+var vendorInfos = {};
+var ie = doc.documentMode;
+
+if (documentElement) {
+    // broken ie8
+    if (documentElement.querySelector && ie !== 8) {
+        isQuerySelectorSupportedState = true;
+    }
+    documentElementStyle = documentElement.style;
+    isClassListSupportedState = 'classList' in documentElement;
+    isMsPointerSupported = 'msPointerEnabled' in navigator;
+    isPointerSupported = 'pointerEnabled' in navigator;
+}
+
+var RE_DASH = /-([a-z])/ig;
+
+function upperCase() {
+    return arguments[1].toUpperCase();
+}
+
+// return prefixed css prefix name
+function getVendorInfo(name) {
+    if (name.indexOf('-') !== -1) {
+        name = name.replace(RE_DASH, upperCase);
+    }
+    if (name in vendorInfos) {
+        return vendorInfos[name];
+    }
+    // if already prefixed or need not to prefix
+    if (!documentElementStyle || name in documentElementStyle) {
+        vendorInfos[name] = {
+            propertyName: name,
+            propertyNamePrefix: ''
+        };
+    } else {
+        var upperFirstName = name.charAt(0).toUpperCase() + name.slice(1);
+        var vendorName;
+
+        for (var i = 0; i < propertyPrefixesLength; i++) {
+            var propertyNamePrefix = propertyPrefixes[i];
+            vendorName = propertyNamePrefix + upperFirstName;
+            if (vendorName in documentElementStyle) {
+                vendorInfos[name] = {
+                    propertyName: vendorName,
+                    propertyNamePrefix: propertyNamePrefix
+                };
+            }
+        }
+
+        vendorInfos[name] = vendorInfos[name] || null;
+    }
+    return vendorInfos[name];
+}
+
+/**
+ * browser features detection
+ * @class KISSY.Feature
+ * @private
+ * @singleton
+ */
+module.exports = {
+    version: '1.0.3',
+
+    // http://blogs.msdn.com/b/ie/archive/2011/09/20/touch-input-for-ie10-and-metro-style-apps.aspx
+    /**
+     * whether support microsoft pointer event.
+     * @type {Boolean}
+     */
+    isMsPointerSupported: function () {
+        // ie11 onMSPointerDown but e.type==pointerdown
+        return isMsPointerSupported;
+    },
+
+    /**
+     * whether support microsoft pointer event (ie11).
+     * @type {Boolean}
+     */
+    isPointerSupported: function () {
+        // ie11
+        return isPointerSupported;
+    },
+
+    /**
+     * whether support touch event.
+     * @return {Boolean}
+     */
+    isTouchEventSupported: function () {
+        return isTouchEventSupportedState;
+    },
+
+    isTouchGestureSupported: function () {
+        return isTouchEventSupportedState || isPointerSupported || isMsPointerSupported;
+    },
+
+    /**
+     * whether support device motion event
+     * @returns {boolean}
+     */
+    isDeviceMotionSupported: function () {
+        return !!win.DeviceMotionEvent;
+    },
+
+    /**
+     * whether support hashchange event
+     * @returns {boolean}
+     */
+    isHashChangeSupported: function () {
+        // ie8 支持 hashchange
+        // 但 ie8 以上切换浏览器模式到 ie7（兼容模式），
+        // 会导致 'onhashchange' in window === true，但是不触发事件
+        return ('onhashchange' in win) && (!ie || ie > 7);
+    },
+
+    isInputEventSupported: function () {
+        return ('oninput' in win) && (!ie || ie > 9);
+    },
+
+    /**
+     * whether support css transform 3d
+     * @returns {boolean}
+     */
+    isTransform3dSupported: function () {
+        if (isTransform3dSupported !== undefined) {
+            return isTransform3dSupported;
+        }
+
+        if (!documentElement || !getVendorInfo('transform')) {
+            isTransform3dSupported = false;
+        } else {
+            // https://gist.github.com/lorenzopolidori/3794226
+            // ie9 does not support 3d transform
+            // http://msdn.microsoft.com/en-us/ie/ff468705
+            try {
+                var el = doc.createElement('p');
+                var transformProperty = getVendorInfo('transform').propertyName;
+                documentElement.insertBefore(el, documentElement.firstChild);
+                el.style[transformProperty] = 'translate3d(1px,1px,1px)';
+                var computedStyle = win.getComputedStyle(el);
+                var has3d = computedStyle.getPropertyValue(transformProperty) || computedStyle[transformProperty];
+                documentElement.removeChild(el);
+                isTransform3dSupported = (has3d !== undefined && has3d.length > 0 && has3d !== 'none');
+            } catch (e) {
+                // https://github.com/kissyteam/kissy/issues/563
+                isTransform3dSupported = true;
+            }
+        }
+
+        return isTransform3dSupported;
+    },
+
+    /**
+     * whether support class list api
+     * @returns {boolean}
+     */
+    isClassListSupported: function () {
+        return isClassListSupportedState;
+    },
+
+    /**
+     * whether support querySelectorAll
+     * @returns {boolean}
+     */
+    isQuerySelectorSupported: function () {
+        // force to use js selector engine
+        return isQuerySelectorSupportedState;
+    },
+
+    getCssVendorInfo: function (name) {
+        return getVendorInfo(name);
+    }
+};});/*
+Copyright 2014, modulex-ua@1.0.3
+MIT Licensed
+build time: Thu, 16 Oct 2014 03:53:49 GMT
 */
 /*
 combined modules:
 ua
 */
-KISSY.add('ua', [], function (S, require, exports, module) {
-    /**
+modulex.add("ua", [], function(require, exports, module) {/**
  * @ignore
  * ua
  */
-    /*global process*/
-    var win = typeof window !== 'undefined' ? window : {}, undef, doc = win.document, ua = win.navigator && win.navigator.userAgent || '';
-    function numberify(s) {
-        var c = 0;    // convert '1.2.3.4' to 1.234
-        // convert '1.2.3.4' to 1.234
-        return parseFloat(s.replace(/\./g, function () {
-            return c++ === 0 ? '.' : '';
-        }));
+
+/*global process*/
+var win = typeof window !== 'undefined' ? window : {};
+var undef;
+var doc = win.document;
+var ua = win.navigator && win.navigator.userAgent || '';
+
+function numberify(s) {
+    var c = 0;
+    // convert '1.2.3.4' to 1.234
+    return parseFloat(s.replace(/\./g, function () {
+        return (c++ === 0) ? '.' : '';
+    }));
+}
+
+function setTridentVersion(ua, UA) {
+    var core, m;
+    UA[core = 'trident'] = 0.1; // Trident detected, look for revision
+
+    // Get the Trident's accurate version
+    if ((m = ua.match(/Trident\/([\d.]*)/)) && m[1]) {
+        UA[core] = numberify(m[1]);
     }
-    function setTridentVersion(ua, UA) {
-        var core, m;
-        UA[core = 'trident'] = 0.1;    // Trident detected, look for revision
-                                       // Get the Trident's accurate version
-        // Trident detected, look for revision
-        // Get the Trident's accurate version
-        if ((m = ua.match(/Trident\/([\d.]*)/)) && m[1]) {
-            UA[core] = numberify(m[1]);
-        }
-        UA.core = core;
+
+    UA.core = core;
+}
+
+function getIEVersion(ua) {
+    var m, v;
+    if ((m = ua.match(/MSIE ([^;]*)|Trident.*; rv(?:\s|:)?([0-9.]+)/)) &&
+        (v = (m[1] || m[2]))) {
+        return numberify(v);
     }
-    function getIEVersion(ua) {
-        var m, v;
-        if ((m = ua.match(/MSIE ([^;]*)|Trident.*; rv(?:\s|:)?([0-9.]+)/)) && (v = m[1] || m[2])) {
-            return numberify(v);
-        }
-        return 0;
-    }
-    function getDescriptorFromUserAgent(ua) {
-        var EMPTY = '', os, core = EMPTY, shell = EMPTY, m, IE_DETECT_RANGE = [
-                6,
-                9
-            ], ieVersion, v, end, VERSION_PLACEHOLDER = '{{version}}', IE_DETECT_TPL = '<!--[if IE ' + VERSION_PLACEHOLDER + ']><' + 's></s><![endif]-->', div = doc && doc.createElement('div'), s = [];    /**
+    return 0;
+}
+
+function getDescriptorFromUserAgent(ua) {
+    var EMPTY = '',
+        os,
+        core = EMPTY,
+        shell = EMPTY,
+        m,
+        IE_DETECT_RANGE = [6, 9],
+        ieVersion,
+        v,
+        end,
+        VERSION_PLACEHOLDER = '{{version}}',
+        IE_DETECT_TPL = '<!--[if IE ' + VERSION_PLACEHOLDER + ']><' + 's></s><![endif]-->',
+        div = doc && doc.createElement('div'),
+        s = [];
+
+    /**
      * KISSY UA
      * @class KISSY.UA
      * @singleton
      */
+    var UA = {
+        version: '1.0.3',
         /**
-     * KISSY UA
-     * @class KISSY.UA
-     * @singleton
-     */
-        var UA = {
-                /**
          * webkit version
          * @type undef|Number
          * @member KISSY.UA
          */
-                webkit: undef,
-                /**
+        webkit: undef,
+        /**
          * trident version
          * @type undef|Number
          * @member KISSY.UA
          */
-                trident: undef,
-                /**
+        trident: undef,
+        /**
          * gecko version
          * @type undef|Number
          * @member KISSY.UA
          */
-                gecko: undef,
-                /**
+        gecko: undef,
+        /**
          * presto version
          * @type undef|Number
          * @member KISSY.UA
          */
-                presto: undef,
-                /**
+        presto: undef,
+        /**
          * chrome version
          * @type undef|Number
          * @member KISSY.UA
          */
-                chrome: undef,
-                /**
+        chrome: undef,
+        /**
          * safari version
          * @type undef|Number
          * @member KISSY.UA
          */
-                safari: undef,
-                /**
+        safari: undef,
+        /**
          * firefox version
          * @type undef|Number
          * @member KISSY.UA
          */
-                firefox: undef,
-                /**
+        firefox: undef,
+        /**
          * ie version
          * @type undef|Number
          * @member KISSY.UA
          */
-                ie: undef,
-                /**
+        ie: undef,
+        /**
          * ie document mode
          * @type undef|Number
          * @member KISSY.UA
          */
-                ieMode: undef,
-                /**
+        ieMode: undef,
+        /**
          * opera version
          * @type undef|Number
          * @member KISSY.UA
          */
-                opera: undef,
-                /**
+        opera: undef,
+        /**
          * mobile browser. apple, android.
          * @type String
          * @member KISSY.UA
          */
-                mobile: undef,
-                /**
+        mobile: undef,
+        /**
          * browser render engine name. webkit, trident
          * @type String
          * @member KISSY.UA
          */
-                core: undef,
-                /**
+        core: undef,
+        /**
          * browser shell name. ie, chrome, firefox
          * @type String
          * @member KISSY.UA
          */
-                shell: undef,
-                /**
+        shell: undef,
+
+        /**
          * PhantomJS version number
          * @type undef|Number
          * @member KISSY.UA
          */
-                phantomjs: undef,
-                /**
+        phantomjs: undef,
+
+        /**
          * operating system. android, ios, linux, windows
          * @type string
          * @member KISSY.UA
          */
-                os: undef,
-                /**
+        os: undef,
+
+        /**
          * ipad ios version
          * @type Number
          * @member KISSY.UA
          */
-                ipad: undef,
-                /**
+        ipad: undef,
+        /**
          * iphone ios version
          * @type Number
          * @member KISSY.UA
          */
-                iphone: undef,
-                /**
+        iphone: undef,
+        /**
          * ipod ios
          * @type Number
          * @member KISSY.UA
          */
-                ipod: undef,
-                /**
+        ipod: undef,
+        /**
          * ios version
          * @type Number
          * @member KISSY.UA
          */
-                ios: undef,
-                /**
+        ios: undef,
+
+        /**
          * android version
          * @type Number
          * @member KISSY.UA
          */
-                android: undef,
-                /**
+        android: undef,
+
+        /**
          * nodejs version
          * @type Number
          * @member KISSY.UA
          */
-                nodejs: undef
-            };    // ejecta
-        // ejecta
-        if (div && div.getElementsByTagName) {
-            // try to use IE-Conditional-Comment detect IE more accurately
-            // IE10 doesn't support this method, @ref: http://blogs.msdn.com/b/ie/archive/2011/07/06/html5-parsing-in-ie10.aspx
-            div.innerHTML = IE_DETECT_TPL.replace(VERSION_PLACEHOLDER, '');
-            s = div.getElementsByTagName('s');
+        nodejs: undef
+    };
+
+    // ejecta
+    if (div && div.getElementsByTagName) {
+        // try to use IE-Conditional-Comment detect IE more accurately
+        // IE10 doesn't support this method, @ref: http://blogs.msdn.com/b/ie/archive/2011/07/06/html5-parsing-in-ie10.aspx
+        div.innerHTML = IE_DETECT_TPL.replace(VERSION_PLACEHOLDER, '');
+        s = div.getElementsByTagName('s');
+    }
+
+    if (s.length > 0) {
+        setTridentVersion(ua, UA);
+
+        // Detect the accurate version
+        // 注意：
+        //  UA.shell = ie, 表示外壳是 ie
+        //  但 UA.ie = 7, 并不代表外壳是 ie7, 还有可能是 ie8 的兼容模式
+        //  对于 ie8 的兼容模式，还要通过 documentMode 去判断。但此处不能让 UA.ie = 8, 否则
+        //  很多脚本判断会失误。因为 ie8 的兼容模式表现行为和 ie7 相同，而不是和 ie8 相同
+        for (v = IE_DETECT_RANGE[0], end = IE_DETECT_RANGE[1]; v <= end; v++) {
+            div.innerHTML = IE_DETECT_TPL.replace(VERSION_PLACEHOLDER, v);
+            if (s.length > 0) {
+                UA[shell = 'ie'] = v;
+                break;
+            }
         }
-        if (s.length > 0) {
-            setTridentVersion(ua, UA);    // Detect the accurate version
-                                          // 注意：
-                                          //  UA.shell = ie, 表示外壳是 ie
-                                          //  但 UA.ie = 7, 并不代表外壳是 ie7, 还有可能是 ie8 的兼容模式
-                                          //  对于 ie8 的兼容模式，还要通过 documentMode 去判断。但此处不能让 UA.ie = 8, 否则
-                                          //  很多脚本判断会失误。因为 ie8 的兼容模式表现行为和 ie7 相同，而不是和 ie8 相同
-            // Detect the accurate version
-            // 注意：
-            //  UA.shell = ie, 表示外壳是 ie
-            //  但 UA.ie = 7, 并不代表外壳是 ie7, 还有可能是 ie8 的兼容模式
-            //  对于 ie8 的兼容模式，还要通过 documentMode 去判断。但此处不能让 UA.ie = 8, 否则
-            //  很多脚本判断会失误。因为 ie8 的兼容模式表现行为和 ie7 相同，而不是和 ie8 相同
-            for (v = IE_DETECT_RANGE[0], end = IE_DETECT_RANGE[1]; v <= end; v++) {
-                div.innerHTML = IE_DETECT_TPL.replace(VERSION_PLACEHOLDER, v);
-                if (s.length > 0) {
-                    UA[shell = 'ie'] = v;
-                    break;
+
+        // https://github.com/kissyteam/kissy/issues/321
+        // win8 embed app
+        if (!UA.ie && (ieVersion = getIEVersion(ua))) {
+            UA[shell = 'ie'] = ieVersion;
+        }
+    } else {
+        // WebKit
+        // https://github.com/kissyteam/kissy/issues/545
+        if (((m = ua.match(/AppleWebKit\/([\d.]*)/)) || (m = ua.match(/Safari\/([\d.]*)/))) && m[1]) {
+            UA[core = 'webkit'] = numberify(m[1]);
+
+            if ((m = ua.match(/OPR\/(\d+\.\d+)/)) && m[1]) {
+                UA[shell = 'opera'] = numberify(m[1]);
+            } else if ((m = ua.match(/Chrome\/([\d.]*)/)) && m[1]) {
+                UA[shell = 'chrome'] = numberify(m[1]);
+            } else if ((m = ua.match(/\/([\d.]*) Safari/)) && m[1]) {
+                UA[shell = 'safari'] = numberify(m[1]);
+            } else {
+                // default to mobile safari
+                UA.safari = UA.webkit;
+            }
+
+            // Apple Mobile
+            if (/ Mobile\//.test(ua) && ua.match(/iPad|iPod|iPhone/)) {
+                UA.mobile = 'apple'; // iPad, iPhone or iPod Touch
+
+                m = ua.match(/OS ([^\s]*)/);
+                if (m && m[1]) {
+                    UA.ios = numberify(m[1].replace('_', '.'));
                 }
-            }    // https://github.com/kissyteam/kissy/issues/321
-                 // win8 embed app
-            // https://github.com/kissyteam/kissy/issues/321
-            // win8 embed app
-            if (!UA.ie && (ieVersion = getIEVersion(ua))) {
-                UA[shell = 'ie'] = ieVersion;
+                os = 'ios';
+                m = ua.match(/iPad|iPod|iPhone/);
+                if (m && m[0]) {
+                    UA[m[0].toLowerCase()] = UA.ios;
+                }
+            } else if (/ Android/i.test(ua)) {
+                if (/Mobile/.test(ua)) {
+                    os = UA.mobile = 'android';
+                }
+                m = ua.match(/Android ([^\s]*);/);
+                if (m && m[1]) {
+                    UA.android = numberify(m[1]);
+                }
+            } else if ((m = ua.match(/NokiaN[^\/]*|Android \d\.\d|webOS\/\d\.\d/))) {
+                UA.mobile = m[0].toLowerCase(); // Nokia N-series, Android, webOS, ex: NokiaN95
+            }
+
+            if ((m = ua.match(/PhantomJS\/([^\s]*)/)) && m[1]) {
+                UA.phantomjs = numberify(m[1]);
             }
         } else {
-            // WebKit
-            // https://github.com/kissyteam/kissy/issues/545
-            if (((m = ua.match(/AppleWebKit\/([\d.]*)/)) || (m = ua.match(/Safari\/([\d.]*)/))) && m[1]) {
-                UA[core = 'webkit'] = numberify(m[1]);
-                if ((m = ua.match(/OPR\/(\d+\.\d+)/)) && m[1]) {
-                    UA[shell = 'opera'] = numberify(m[1]);
-                } else if ((m = ua.match(/Chrome\/([\d.]*)/)) && m[1]) {
-                    UA[shell = 'chrome'] = numberify(m[1]);
-                } else if ((m = ua.match(/\/([\d.]*) Safari/)) && m[1]) {
-                    UA[shell = 'safari'] = numberify(m[1]);
-                } else {
-                    // default to mobile safari
-                    UA.safari = UA.webkit;
-                }    // Apple Mobile
-                // Apple Mobile
-                if (/ Mobile\//.test(ua) && ua.match(/iPad|iPod|iPhone/)) {
-                    UA.mobile = 'apple';    // iPad, iPhone or iPod Touch
-                    // iPad, iPhone or iPod Touch
-                    m = ua.match(/OS ([^\s]*)/);
-                    if (m && m[1]) {
-                        UA.ios = numberify(m[1].replace('_', '.'));
+            // Presto
+            // ref: http://www.useragentstring.com/pages/useragentstring.php
+            if ((m = ua.match(/Presto\/([\d.]*)/)) && m[1]) {
+                UA[core = 'presto'] = numberify(m[1]);
+
+                // Opera
+                if ((m = ua.match(/Opera\/([\d.]*)/)) && m[1]) {
+                    UA[shell = 'opera'] = numberify(m[1]); // Opera detected, look for revision
+
+                    if ((m = ua.match(/Opera\/.* Version\/([\d.]*)/)) && m[1]) {
+                        UA[shell] = numberify(m[1]);
                     }
-                    os = 'ios';
-                    m = ua.match(/iPad|iPod|iPhone/);
-                    if (m && m[0]) {
-                        UA[m[0].toLowerCase()] = UA.ios;
+
+                    // Opera Mini
+                    if ((m = ua.match(/Opera Mini[^;]*/)) && m) {
+                        UA.mobile = m[0].toLowerCase(); // ex: Opera Mini/2.0.4509/1316
+                    } else if ((m = ua.match(/Opera Mobi[^;]*/)) && m) {
+                        // Opera Mobile
+                        // ex: Opera/9.80 (Windows NT 6.1; Opera Mobi/49; U; en) Presto/2.4.18 Version/10.00
+                        // issue: 由于 Opera Mobile 有 Version/ 字段，可能会与 Opera 混淆，同时对于 Opera Mobile 的版本号也比较混乱
+                        UA.mobile = m[0];
                     }
-                } else if (/ Android/i.test(ua)) {
-                    if (/Mobile/.test(ua)) {
-                        os = UA.mobile = 'android';
-                    }
-                    m = ua.match(/Android ([^\s]*);/);
-                    if (m && m[1]) {
-                        UA.android = numberify(m[1]);
-                    }
-                } else if (m = ua.match(/NokiaN[^\/]*|Android \d\.\d|webOS\/\d\.\d/)) {
-                    UA.mobile = m[0].toLowerCase();    // Nokia N-series, Android, webOS, ex: NokiaN95
                 }
-                // Nokia N-series, Android, webOS, ex: NokiaN95
-                if ((m = ua.match(/PhantomJS\/([^\s]*)/)) && m[1]) {
-                    UA.phantomjs = numberify(m[1]);
-                }
+                // NOT WebKit or Presto
             } else {
-                // Presto
-                // ref: http://www.useragentstring.com/pages/useragentstring.php
-                if ((m = ua.match(/Presto\/([\d.]*)/)) && m[1]) {
-                    UA[core = 'presto'] = numberify(m[1]);    // Opera
-                    // Opera
-                    if ((m = ua.match(/Opera\/([\d.]*)/)) && m[1]) {
-                        UA[shell = 'opera'] = numberify(m[1]);    // Opera detected, look for revision
-                        // Opera detected, look for revision
-                        if ((m = ua.match(/Opera\/.* Version\/([\d.]*)/)) && m[1]) {
-                            UA[shell] = numberify(m[1]);
-                        }    // Opera Mini
-                        // Opera Mini
-                        if ((m = ua.match(/Opera Mini[^;]*/)) && m) {
-                            UA.mobile = m[0].toLowerCase();    // ex: Opera Mini/2.0.4509/1316
-                        } else // ex: Opera Mini/2.0.4509/1316
-                        if ((m = ua.match(/Opera Mobi[^;]*/)) && m) {
-                            // Opera Mobile
-                            // ex: Opera/9.80 (Windows NT 6.1; Opera Mobi/49; U; en) Presto/2.4.18 Version/10.00
-                            // issue: 由于 Opera Mobile 有 Version/ 字段，可能会与 Opera 混淆，同时对于 Opera Mobile 的版本号也比较混乱
-                            UA.mobile = m[0];
-                        }
-                    }    // NOT WebKit or Presto
-                } else
-                    // NOT WebKit or Presto
-                    {
-                        // MSIE
-                        // 由于最开始已经使用了 IE 条件注释判断，因此落到这里的唯一可能性只有 IE10+
-                        // and analysis tools in nodejs
-                        if (ieVersion = getIEVersion(ua)) {
-                            UA[shell = 'ie'] = ieVersion;
-                            setTridentVersion(ua, UA);    // NOT WebKit, Presto or IE
-                        } else
-                            // NOT WebKit, Presto or IE
-                            {
-                                // Gecko
-                                if (m = ua.match(/Gecko/)) {
-                                    UA[core = 'gecko'] = 0.1;    // Gecko detected, look for revision
-                                    // Gecko detected, look for revision
-                                    if ((m = ua.match(/rv:([\d.]*)/)) && m[1]) {
-                                        UA[core] = numberify(m[1]);
-                                        if (/Mobile|Tablet/.test(ua)) {
-                                            UA.mobile = 'firefox';
-                                        }
-                                    }    // Firefox
-                                    // Firefox
-                                    if ((m = ua.match(/Firefox\/([\d.]*)/)) && m[1]) {
-                                        UA[shell = 'firefox'] = numberify(m[1]);
-                                    }
-                                }
+                // MSIE
+                // 由于最开始已经使用了 IE 条件注释判断，因此落到这里的唯一可能性只有 IE10+
+                // and analysis tools in nodejs
+                if ((ieVersion = getIEVersion(ua))) {
+                    UA[shell = 'ie'] = ieVersion;
+                    setTridentVersion(ua, UA);
+                    // NOT WebKit, Presto or IE
+                } else {
+                    // Gecko
+                    if ((m = ua.match(/Gecko/))) {
+                        UA[core = 'gecko'] = 0.1; // Gecko detected, look for revision
+                        if ((m = ua.match(/rv:([\d.]*)/)) && m[1]) {
+                            UA[core] = numberify(m[1]);
+                            if (/Mobile|Tablet/.test(ua)) {
+                                UA.mobile = 'firefox';
                             }
+                        }
+                        // Firefox
+                        if ((m = ua.match(/Firefox\/([\d.]*)/)) && m[1]) {
+                            UA[shell = 'firefox'] = numberify(m[1]);
+                        }
                     }
+                }
             }
         }
-        if (!os) {
-            if (/windows|win32/i.test(ua)) {
-                os = 'windows';
-            } else if (/macintosh|mac_powerpc/i.test(ua)) {
-                os = 'macintosh';
-            } else if (/linux/i.test(ua)) {
-                os = 'linux';
-            } else if (/rhino/i.test(ua)) {
-                os = 'rhino';
-            }
-        }
-        UA.os = os;
-        UA.core = UA.core || core;
-        UA.shell = shell;
-        UA.ieMode = UA.ie && doc.documentMode || UA.ie;
-        return UA;
     }
-    var UA = module.exports = getDescriptorFromUserAgent(ua);    // nodejs
-    // nodejs
-    if (typeof process === 'object') {
-        var versions, nodeVersion;
-        if ((versions = process.versions) && (nodeVersion = versions.node)) {
-            UA.os = process.platform;
-            UA.nodejs = numberify(nodeVersion);
+
+    if (!os) {
+        if ((/windows|win32/i).test(ua)) {
+            os = 'windows';
+        } else if ((/macintosh|mac_powerpc/i).test(ua)) {
+            os = 'macintosh';
+        } else if ((/linux/i).test(ua)) {
+            os = 'linux';
+        } else if ((/rhino/i).test(ua)) {
+            os = 'rhino';
         }
-    }    // use by analysis tools in nodejs
-    // use by analysis tools in nodejs
-    UA.getDescriptorFromUserAgent = getDescriptorFromUserAgent;
-    var browsers = [
-            // browser core type
-            'webkit',
-            'trident',
-            'gecko',
-            'presto',
-            // browser type
-            'chrome',
-            'safari',
-            'firefox',
-            'ie',
-            'opera'
-        ], documentElement = doc && doc.documentElement, className = '';
-    if (documentElement) {
-        for (var i = 0; i < browsers.length; i++) {
-            var key = browsers[i];
-            var v = UA[key];
-            if (v) {
-                className += ' ks-' + key + (parseInt(v, 10) + '');
-                className += ' ks-' + key;
-            }
+    }
+
+    UA.os = os;
+    UA.core = UA.core || core;
+    UA.shell = shell;
+    UA.ieMode = UA.ie && doc.documentMode || UA.ie;
+
+    return UA;
+}
+
+var UA = module.exports = getDescriptorFromUserAgent(ua);
+
+// nodejs
+if (typeof process === 'object') {
+    var versions, nodeVersion;
+    if ((versions = process.versions) && (nodeVersion = versions.node)) {
+        UA.os = process.platform;
+        UA.nodejs = numberify(nodeVersion);
+    }
+}
+
+// use by analysis tools in nodejs
+UA.getDescriptorFromUserAgent = getDescriptorFromUserAgent;
+
+var browsers = [
+        // browser core type
+        'webkit',
+        'trident',
+        'gecko',
+        'presto',
+        // browser type
+        'chrome',
+        'safari',
+        'firefox',
+        'ie',
+        'opera'
+    ],
+    documentElement = doc && doc.documentElement,
+    className = '';
+if (documentElement) {
+    for (var i = 0; i < browsers.length; i++) {
+        var key = browsers[i];
+        var v = UA[key];
+        if (v) {
+            className += ' ks-' + key + (parseInt(v, 10) + '');
+            className += ' ks-' + key;
         }
-        if (className) {
-            documentElement.className = (documentElement.className + className).replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
-        }
-    }    /*
+    }
+    if (className) {
+        documentElement.className = (documentElement.className + className)
+            .replace(/^[\s\xa0]+|[\s\xa0]+$/g, '');
+    }
+}
+
+/*
  NOTES:
  2013.07.08 yiminghe@gmail.com
  - support ie11 and opera(using blink)
@@ -2931,217 +2999,37 @@ KISSY.add('ua', [], function (S, require, exports, module) {
  同时并非是某个特性探测可以解决时，用浏览器嗅探反而能带来代码的简洁，同时也也不会有什么后患。总之，一切
  皆权衡。
  - UA.ie && UA.ie < 8 并不意味着浏览器就不是 IE8, 有可能是 IE8 的兼容模式。进一步的判断需要使用 documentMode.
- */
-});
-/*
-Copyright 2014, KISSY v5.0.0
-MIT Licensed
-build time: Jul 18 14:03
-*/
-/*
-combined modules:
-feature
-*/
-KISSY.add('feature', ['ua'], function (S, require, exports, module) {
-    /**
- * @ignore
- * detect if current browser supports various features.
- * @author yiminghe@gmail.com
- */
-    var win = window, UA = require('ua'), propertyPrefixes = [
-            'Webkit',
-            'Moz',
-            'O',
-            // ms is special .... !
-            'ms'
-        ], propertyPrefixesLength = propertyPrefixes.length,
-        // for nodejs
-        doc = win.document || {}, isMsPointerSupported,
-        // ie11
-        isPointerSupported, isTransform3dSupported,
-        // nodejs
-        documentElement = doc && doc.documentElement, documentElementStyle, isClassListSupportedState = true, isQuerySelectorSupportedState = false,
-        // phantomjs issue: http://code.google.com/p/phantomjs/issues/detail?id=375
-        isTouchEventSupportedState = 'ontouchstart' in doc && !UA.phantomjs, vendorInfos = {}, ie = UA.ieMode;
-    if (documentElement) {
-        // broken ie8
-        if (documentElement.querySelector && ie !== 8) {
-            isQuerySelectorSupportedState = true;
-        }
-        documentElementStyle = documentElement.style;
-        isClassListSupportedState = 'classList' in documentElement;
-        isMsPointerSupported = 'msPointerEnabled' in navigator;
-        isPointerSupported = 'pointerEnabled' in navigator;
-    }
-    var RE_DASH = /-([a-z])/gi;
-    function upperCase() {
-        return arguments[1].toUpperCase();
-    }    // return prefixed css prefix name
-    // return prefixed css prefix name
-    function getVendorInfo(name) {
-        if (name.indexOf('-') !== -1) {
-            name = name.replace(RE_DASH, upperCase);
-        }
-        if (name in vendorInfos) {
-            return vendorInfos[name];
-        }    // if already prefixed or need not to prefix
-        // if already prefixed or need not to prefix
-        if (!documentElementStyle || name in documentElementStyle) {
-            vendorInfos[name] = {
-                propertyName: name,
-                propertyNamePrefix: ''
-            };
-        } else {
-            var upperFirstName = name.charAt(0).toUpperCase() + name.slice(1), vendorName;
-            for (var i = 0; i < propertyPrefixesLength; i++) {
-                var propertyNamePrefix = propertyPrefixes[i];
-                vendorName = propertyNamePrefix + upperFirstName;
-                if (vendorName in documentElementStyle) {
-                    vendorInfos[name] = {
-                        propertyName: vendorName,
-                        propertyNamePrefix: propertyNamePrefix
-                    };
-                }
-            }
-            vendorInfos[name] = vendorInfos[name] || null;
-        }
-        return vendorInfos[name];
-    }    /**
- * browser features detection
- * @class KISSY.Feature
- * @private
- * @singleton
- */
-    /**
- * browser features detection
- * @class KISSY.Feature
- * @private
- * @singleton
- */
-    module.exports = {
-        // http://blogs.msdn.com/b/ie/archive/2011/09/20/touch-input-for-ie10-and-metro-style-apps.aspx
-        /**
-     * whether support microsoft pointer event.
-     * @type {Boolean}
-     */
-        isMsPointerSupported: function () {
-            // ie11 onMSPointerDown but e.type==pointerdown
-            return isMsPointerSupported;
-        },
-        /**
-     * whether support microsoft pointer event (ie11).
-     * @type {Boolean}
-     */
-        isPointerSupported: function () {
-            // ie11
-            return isPointerSupported;
-        },
-        /**
-     * whether support touch event.
-     * @return {Boolean}
-     */
-        isTouchEventSupported: function () {
-            return isTouchEventSupportedState;
-        },
-        isTouchGestureSupported: function () {
-            return isTouchEventSupportedState || isPointerSupported || isMsPointerSupported;
-        },
-        /**
-     * whether support device motion event
-     * @returns {boolean}
-     */
-        isDeviceMotionSupported: function () {
-            return !!win.DeviceMotionEvent;
-        },
-        /**
-     * whether support hashchange event
-     * @returns {boolean}
-     */
-        isHashChangeSupported: function () {
-            // ie8 支持 hashchange
-            // 但 ie8 以上切换浏览器模式到 ie7（兼容模式），
-            // 会导致 'onhashchange' in window === true，但是不触发事件
-            return 'onhashchange' in win && (!ie || ie > 7);
-        },
-        isInputEventSupported: function () {
-            return 'oninput' in win && (!ie || ie > 9);
-        },
-        /**
-     * whether support css transform 3d
-     * @returns {boolean}
-     */
-        isTransform3dSupported: function () {
-            if (isTransform3dSupported !== undefined) {
-                return isTransform3dSupported;
-            }
-            if (!documentElement || !getVendorInfo('transform')) {
-                isTransform3dSupported = false;
-            } else {
-                // https://gist.github.com/lorenzopolidori/3794226
-                // ie9 does not support 3d transform
-                // http://msdn.microsoft.com/en-us/ie/ff468705
-                try {
-                    var el = doc.createElement('p');
-                    var transformProperty = getVendorInfo('transform').propertyName;
-                    documentElement.insertBefore(el, documentElement.firstChild);
-                    el.style[transformProperty] = 'translate3d(1px,1px,1px)';
-                    var computedStyle = win.getComputedStyle(el);
-                    var has3d = computedStyle.getPropertyValue(transformProperty) || computedStyle[transformProperty];
-                    documentElement.removeChild(el);
-                    isTransform3dSupported = has3d !== undefined && has3d.length > 0 && has3d !== 'none';
-                } catch (e) {
-                    // https://github.com/kissyteam/kissy/issues/563
-                    isTransform3dSupported = true;
-                }
-            }
-            return isTransform3dSupported;
-        },
-        /**
-     * whether support class list api
-     * @returns {boolean}
-     */
-        isClassListSupported: function () {
-            return isClassListSupportedState;
-        },
-        /**
-     * whether support querySelectorAll
-     * @returns {boolean}
-     */
-        isQuerySelectorSupported: function () {
-            // force to use js selector engine
-            return isQuerySelectorSupportedState;
-        },
-        getCssVendorInfo: function (name) {
-            return getVendorInfo(name);
-        }
-    };
-});
-/*
-Copyright 2014, KISSY v5.0.0
-MIT Licensed
-build time: Aug 11 10:12
-*/
-/**
- * @ignore
- * Default KISSY Gallery and core alias.
- * @author yiminghe@gmail.com
- */
-
-// --no-module-wrap--
-KISSY.config({
-    packages: {
-        gallery: {
-            base: location.protocol === 'https' ?
-                'https://s.tbcdn.cn/s/kissy/gallery' : 'http://a.tbcdn.cn/s/kissy/gallery'
-        }
-    }
-});/*jshint indent:false, quotmark:false*/
-KISSY.use(['ua', 'feature'], function(S, UA, Feature){
-S.config("requires",{
+ */});/*jshint indent:false, quotmark:false*/
+modulex.use(['ua', 'feature'], function(UA, Feature){
+var mx = modulex;
+mx.config("requires",{
+    "attribute": [
+        "modulex-util",
+        "modulex-event-custom"
+    ],
+    "dom/base": [
+        "modulex-util",
+        "modulex-ua",
+        "modulex-feature",
+        "dom/selector"
+    ],
+    "dom/ie": [
+        "dom/base"
+    ],
+    "event-base": [
+        "modulex-util"
+    ],
+    "event-custom": [
+        "modulex-util",
+        "modulex-event-base"
+    ],
+    "gregorian-calendar": [
+        "i18n!gregorian-calendar"
+    ],
     "anim/base": [
         "dom",
-        "querystring",
-        "promise"
+        "promise",
+        "util"
     ],
     "anim/timer": [
         "anim/base",
@@ -3151,38 +3039,35 @@ S.config("requires",{
         "anim/base",
         "feature"
     ],
-    "attribute": [
-        "event/custom"
-    ],
     "base": [
         "attribute"
     ],
     "button": [
         "component/control"
     ],
-    "color": [
-        "attribute"
+    "combobox/multi-word": [
+        "combobox"
     ],
     "combobox": [
         "menu",
         "io"
-    ],
-    "combobox/multi-word": [
-        "combobox"
     ],
     "component/container": [
         "component/control"
     ],
     "component/control": [
         "node",
-        "event/gesture/basic",
-        "event/gesture/tap",
+        "event-dom/gesture/basic",
+        "event-dom/gesture/tap",
         "base",
         "xtemplate/runtime"
     ],
     "component/extension/align": [
         "node",
         "ua"
+    ],
+    "component/extension/content-box": [
+        "xtemplate/runtime"
     ],
     "component/extension/delegate-children": [
         "component/control"
@@ -3196,32 +3081,13 @@ S.config("requires",{
     "component/plugin/resize": [
         "resizable"
     ],
-    "cookie": [
-        "util"
-    ],
-    "date/format": [
-        "date/gregorian"
-    ],
-    "date/gregorian": [
-        "util",
-        "i18n!date"
-    ],
-    "date/picker": [
-        "i18n!date/picker",
+    "date-picker": [
+        "gregorian-calendar",
         "component/control",
-        "date/format",
-        "date/picker-xtpl"
-    ],
-    "date/popup-picker": [
-        "date/picker",
+        "gregorian-calendar-format",
         "component/extension/shim",
-        "component/extension/align"
-    ],
-    "dd": [
-        "base",
-        "node",
-        "event/gesture/basic",
-        "event/gesture/pan"
+        "component/extension/align",
+        "i18n!date-picker"
     ],
     "dd/plugin/constrain": [
         "base",
@@ -3233,98 +3099,73 @@ S.config("requires",{
     "dd/plugin/scroll": [
         "dd"
     ],
-    "dom/base": [
-        "util",
-        "feature"
-    ],
-    "dom/class-list": [
-        "dom/base"
-    ],
-    "dom/ie": [
-        "dom/base"
-    ],
-    "dom/selector": [
-        "util",
-        "dom/basic"
+    "dd": [
+        "base",
+        "node",
+        "event-dom/gesture/basic",
+        "event-dom/gesture/pan"
     ],
     "editor": [
         "html-parser",
         "component/control"
     ],
-    "event": [
-        "event/dom",
-        "event/custom"
-    ],
-    "event/base": [
-        "util"
-    ],
-    "event/custom": [
-        "event/base"
-    ],
-    "event/dom/base": [
-        "event/base",
+    "event-dom/base": [
+        "event-base",
         "dom",
         "ua"
     ],
-    "event/dom/focusin": [
-        "event/dom/base"
+    "event-dom/focusin": [
+        "event-dom/base"
     ],
-    "event/dom/hashchange": [
-        "event/dom/base"
+    "event-dom/gesture/basic": [
+        "event-dom/gesture/util"
     ],
-    "event/dom/ie": [
-        "event/dom/base"
+    "event-dom/gesture/edge-pan": [
+        "event-dom/gesture/util"
     ],
-    "event/dom/input": [
-        "event/dom/base"
+    "event-dom/gesture/pan": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/basic": [
-        "event/gesture/util"
+    "event-dom/gesture/pinch": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/edge-pan": [
-        "event/gesture/util"
+    "event-dom/gesture/rotate": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/pan": [
-        "event/gesture/util"
+    "event-dom/gesture/shake": [
+        "event-dom/base"
     ],
-    "event/gesture/pinch": [
-        "event/gesture/util"
+    "event-dom/gesture/swipe": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/rotate": [
-        "event/gesture/util"
+    "event-dom/gesture/tap": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/shake": [
-        "event/dom/base"
-    ],
-    "event/gesture/swipe": [
-        "event/gesture/util"
-    ],
-    "event/gesture/tap": [
-        "event/gesture/util"
-    ],
-    "event/gesture/util": [
-        "event/dom/base",
+    "event-dom/gesture/util": [
+        "event-dom/base",
         "feature"
     ],
-    "feature": [
-        "ua"
+    "event-dom/hashchange": [
+        "event-dom/base"
+    ],
+    "event-dom/ie": [
+        "event-dom/base"
+    ],
+    "event-dom/input": [
+        "event-dom/base"
     ],
     "filter-menu": [
         "menu"
     ],
-    "html-parser": [
-        "util"
-    ],
     "io": [
+        "util",
         "dom",
-        "event/custom",
+        "querystring",
+        "event-custom",
         "promise",
         "url",
         "ua",
-        "event/dom"
-    ],
-    "json": [
-        "util"
+        "event-dom"
     ],
     "menu": [
         "component/container",
@@ -3337,17 +3178,17 @@ S.config("requires",{
         "button",
         "menu"
     ],
+    "navigation-view/bar": [
+        "button"
+    ],
     "navigation-view": [
         "component/container",
         "component/extension/content-box"
     ],
-    "navigation-view/bar": [
-        "button"
-    ],
     "node": [
         "util",
         "dom",
-        "event/dom",
+        "event-dom",
         "anim"
     ],
     "overlay": [
@@ -3356,23 +3197,17 @@ S.config("requires",{
         "component/extension/align",
         "component/extension/content-box"
     ],
-    "promise": [
-        "util"
-    ],
-    "querystring": [
-        "logger-manager"
-    ],
-    "resizable": [
-        "dd"
-    ],
     "resizable/plugin/proxy": [
         "base",
         "node"
     ],
+    "resizable": [
+        "dd"
+    ],
     "router": [
         "url",
-        "event/dom",
-        "event/custom",
+        "event-dom",
+        "event-custom",
         "feature"
     ],
     "scroll-view/base": [
@@ -3387,11 +3222,13 @@ S.config("requires",{
     ],
     "scroll-view/plugin/scrollbar": [
         "component/control",
-        "event/gesture/pan"
+        "event-dom/gesture/pan"
     ],
     "scroll-view/touch": [
-        "scroll-view/base",
-        "event/gesture/pan"
+        "anim/timer",
+        "event-dom/gesture/pan",
+        "component/container",
+        "component/extension/content-box"
     ],
     "separator": [
         "component/control"
@@ -3403,9 +3240,7 @@ S.config("requires",{
         "dom"
     ],
     "swf": [
-        "dom",
-        "json",
-        "attribute"
+        "dom"
     ],
     "tabs": [
         "toolbar",
@@ -3422,74 +3257,102 @@ S.config("requires",{
         "component/extension/delegate-children"
     ],
     "url": [
-        "querystring",
-        "path"
-    ],
-    "util": [
-        "logger-manager"
-    ],
-    "xtemplate": [
-        "xtemplate/runtime"
-    ],
-    "xtemplate/runtime": [
-        "util"
+        "modulex-querystring",
+        "modulex-path"
     ]
 });
-var win = window,
-    isTouchGestureSupported = Feature.isTouchGestureSupported(),
-    add = S.add,
-    emptyObject = {};
-
-function alias(name, aliasName) {
-   var cfg;
-   if(typeof name ==="string") {
-       cfg = {};
-       cfg[name] = aliasName;
-   } else {
-       cfg = name;
-   }
-   S.config("alias", cfg);
-}
-
-alias('anim', Feature.getCssVendorInfo('transition') ? 'anim/transition' : 'anim/timer');
-alias({
-    'dom/basic': [
-        'dom/base',
-        UA.ieMode < 9 ? 'dom/ie' : '',
-        Feature.isClassListSupported() ? '' : 'dom/class-list'
-    ],
+modulex.config('alias', {
+    'modulex-attribute': 'attribute'
+});
+modulex.config('alias', {
+    'modulex-dom': 'dom',
+    'dom/selector': Feature.isQuerySelectorSupported() ? '' : 'query-selector',
     dom: [
-        'dom/basic',
-        Feature.isQuerySelectorSupported() ? '' : 'dom/selector'
+        'dom/base',
+            UA.ieMode < 9 ? 'dom/ie' : ''
     ]
 });
-alias('event/dom', [
-    'event/dom/base',
-    Feature.isHashChangeSupported() ? '' : 'event/dom/hashchange',
-        UA.ieMode < 9 ? 'event/dom/ie' : '',
-    Feature.isInputEventSupported() ? '' : 'event/dom/input',
-    UA.ie ? '' : 'event/dom/focusin'
-]);
-if (!isTouchGestureSupported) {
-    add('event/gesture/edge-pan', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/pinch', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/rotate', emptyObject);
-}
-
-if (!win.DeviceMotionEvent) {
-    add('event/gesture/shake', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/swipe', emptyObject);
-}
-
-alias('ajax','io');
-alias('scroll-view', Feature.isTouchGestureSupported() ? 'scroll-view/touch' : 'scroll-view/base');
+modulex.config('alias', {
+    'modulex-event-base': 'event-base'
 });
+modulex.config('alias', {
+    'modulex-event-custom': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-feature': 'feature'
+});
+modulex.config('alias', {
+    'anim': Feature.getCssVendorInfo('transition') ? 'anim/transition' : 'anim/timer'
+});
+modulex.config('alias', {
+    'modulex-attribute': 'attribute'
+});
+modulex.config('alias', {
+    'modulex-base': 'base'
+});
+modulex.config('alias', {
+    'modulex-color': 'color'
+});
+modulex.config('alias', {
+    'modulex-dom': 'dom',
+    'dom/selector': Feature.isQuerySelectorSupported() ? '' : 'query-selector',
+    dom: [
+        'dom/base',
+            UA.ieMode < 9 ? 'dom/ie' : ''
+    ]
+});
+modulex.config('alias', {
+    'modulex-event-base': 'event-base'
+});
+modulex.config('alias', {
+    'modulex-event-custom': 'event-custom'
+});
+modulex.config('alias', {
+    'event-dom': [
+        'event-dom/base',
+        Feature.isHashChangeSupported() ? '' : 'event-dom/hashchange',
+            UA.ieMode < 9 ? 'event-dom/ie' : '',
+        Feature.isInputEventSupported() ? '' : 'event-dom/input',
+        UA.ie ? '' : 'event-dom/focusin'
+    ]
+});
+modulex.config('alias', {
+    'modulex-feature': 'feature'
+});
+modulex.config('alias', {
+    'modulex-path': 'path'
+});
+modulex.config('alias', {
+    'modulex-promise': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-querystring': 'querystring'
+});
+modulex.config('alias', {'scroll-view': Feature.isTouchGestureSupported() ? 'scroll-view/touch' : 'scroll-view/base'});
+modulex.config('alias', {
+    'modulex-ua': 'ua'
+});
+modulex.config('alias', {
+    'modulex-url': 'url'
+});
+modulex.config('alias', {
+    'modulex-util': 'util'
+});
+modulex.config('alias', {
+    'modulex-path': 'path'
+});
+modulex.config('alias', {
+    'modulex-promise': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-querystring': 'querystring'
+});
+modulex.config('alias', {
+    'modulex-ua': 'ua'
+});
+modulex.config('alias', {
+    'modulex-util': 'util'
+});
+});
+modulex.init({name:"seed"});
+modulex.config({ packages : { kg : { base : "//g.alicdn.com/kg/" }}});

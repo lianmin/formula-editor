@@ -1,29 +1,34 @@
-/*
-Copyright 2014, KISSY v5.0.0
-MIT Licensed
-build time: Aug 11 10:12
-*/
-/**
- * @ignore
- * Default KISSY Gallery and core alias.
- * @author yiminghe@gmail.com
- */
-
-// --no-module-wrap--
-KISSY.config({
-    packages: {
-        gallery: {
-            base: location.protocol === 'https' ?
-                'https://s.tbcdn.cn/s/kissy/gallery' : 'http://a.tbcdn.cn/s/kissy/gallery'
-        }
-    }
-});/*jshint indent:false, quotmark:false*/
-KISSY.use(['ua', 'feature'], function(S, UA, Feature){
-S.config("requires",{
+/*jshint indent:false, quotmark:false*/
+modulex.use(['ua', 'feature'], function(UA, Feature){
+var mx = modulex;
+mx.config("requires",{
+    "attribute": [
+        "modulex-util",
+        "modulex-event-custom"
+    ],
+    "dom/base": [
+        "modulex-util",
+        "modulex-ua",
+        "modulex-feature",
+        "dom/selector"
+    ],
+    "dom/ie": [
+        "dom/base"
+    ],
+    "event-base": [
+        "modulex-util"
+    ],
+    "event-custom": [
+        "modulex-util",
+        "modulex-event-base"
+    ],
+    "gregorian-calendar": [
+        "i18n!gregorian-calendar"
+    ],
     "anim/base": [
         "dom",
-        "querystring",
-        "promise"
+        "promise",
+        "util"
     ],
     "anim/timer": [
         "anim/base",
@@ -33,38 +38,35 @@ S.config("requires",{
         "anim/base",
         "feature"
     ],
-    "attribute": [
-        "event/custom"
-    ],
     "base": [
         "attribute"
     ],
     "button": [
         "component/control"
     ],
-    "color": [
-        "attribute"
+    "combobox/multi-word": [
+        "combobox"
     ],
     "combobox": [
         "menu",
         "io"
-    ],
-    "combobox/multi-word": [
-        "combobox"
     ],
     "component/container": [
         "component/control"
     ],
     "component/control": [
         "node",
-        "event/gesture/basic",
-        "event/gesture/tap",
+        "event-dom/gesture/basic",
+        "event-dom/gesture/tap",
         "base",
         "xtemplate/runtime"
     ],
     "component/extension/align": [
         "node",
         "ua"
+    ],
+    "component/extension/content-box": [
+        "xtemplate/runtime"
     ],
     "component/extension/delegate-children": [
         "component/control"
@@ -78,32 +80,13 @@ S.config("requires",{
     "component/plugin/resize": [
         "resizable"
     ],
-    "cookie": [
-        "util"
-    ],
-    "date/format": [
-        "date/gregorian"
-    ],
-    "date/gregorian": [
-        "util",
-        "i18n!date"
-    ],
-    "date/picker": [
-        "i18n!date/picker",
+    "date-picker": [
+        "gregorian-calendar",
         "component/control",
-        "date/format",
-        "date/picker-xtpl"
-    ],
-    "date/popup-picker": [
-        "date/picker",
+        "gregorian-calendar-format",
         "component/extension/shim",
-        "component/extension/align"
-    ],
-    "dd": [
-        "base",
-        "node",
-        "event/gesture/basic",
-        "event/gesture/pan"
+        "component/extension/align",
+        "i18n!date-picker"
     ],
     "dd/plugin/constrain": [
         "base",
@@ -115,98 +98,73 @@ S.config("requires",{
     "dd/plugin/scroll": [
         "dd"
     ],
-    "dom/base": [
-        "util",
-        "feature"
-    ],
-    "dom/class-list": [
-        "dom/base"
-    ],
-    "dom/ie": [
-        "dom/base"
-    ],
-    "dom/selector": [
-        "util",
-        "dom/basic"
+    "dd": [
+        "base",
+        "node",
+        "event-dom/gesture/basic",
+        "event-dom/gesture/pan"
     ],
     "editor": [
         "html-parser",
         "component/control"
     ],
-    "event": [
-        "event/dom",
-        "event/custom"
-    ],
-    "event/base": [
-        "util"
-    ],
-    "event/custom": [
-        "event/base"
-    ],
-    "event/dom/base": [
-        "event/base",
+    "event-dom/base": [
+        "event-base",
         "dom",
         "ua"
     ],
-    "event/dom/focusin": [
-        "event/dom/base"
+    "event-dom/focusin": [
+        "event-dom/base"
     ],
-    "event/dom/hashchange": [
-        "event/dom/base"
+    "event-dom/gesture/basic": [
+        "event-dom/gesture/util"
     ],
-    "event/dom/ie": [
-        "event/dom/base"
+    "event-dom/gesture/edge-pan": [
+        "event-dom/gesture/util"
     ],
-    "event/dom/input": [
-        "event/dom/base"
+    "event-dom/gesture/pan": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/basic": [
-        "event/gesture/util"
+    "event-dom/gesture/pinch": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/edge-pan": [
-        "event/gesture/util"
+    "event-dom/gesture/rotate": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/pan": [
-        "event/gesture/util"
+    "event-dom/gesture/shake": [
+        "event-dom/base"
     ],
-    "event/gesture/pinch": [
-        "event/gesture/util"
+    "event-dom/gesture/swipe": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/rotate": [
-        "event/gesture/util"
+    "event-dom/gesture/tap": [
+        "event-dom/gesture/util"
     ],
-    "event/gesture/shake": [
-        "event/dom/base"
-    ],
-    "event/gesture/swipe": [
-        "event/gesture/util"
-    ],
-    "event/gesture/tap": [
-        "event/gesture/util"
-    ],
-    "event/gesture/util": [
-        "event/dom/base",
+    "event-dom/gesture/util": [
+        "event-dom/base",
         "feature"
     ],
-    "feature": [
-        "ua"
+    "event-dom/hashchange": [
+        "event-dom/base"
+    ],
+    "event-dom/ie": [
+        "event-dom/base"
+    ],
+    "event-dom/input": [
+        "event-dom/base"
     ],
     "filter-menu": [
         "menu"
     ],
-    "html-parser": [
-        "util"
-    ],
     "io": [
+        "util",
         "dom",
-        "event/custom",
+        "querystring",
+        "event-custom",
         "promise",
         "url",
         "ua",
-        "event/dom"
-    ],
-    "json": [
-        "util"
+        "event-dom"
     ],
     "menu": [
         "component/container",
@@ -219,17 +177,17 @@ S.config("requires",{
         "button",
         "menu"
     ],
+    "navigation-view/bar": [
+        "button"
+    ],
     "navigation-view": [
         "component/container",
         "component/extension/content-box"
     ],
-    "navigation-view/bar": [
-        "button"
-    ],
     "node": [
         "util",
         "dom",
-        "event/dom",
+        "event-dom",
         "anim"
     ],
     "overlay": [
@@ -238,23 +196,17 @@ S.config("requires",{
         "component/extension/align",
         "component/extension/content-box"
     ],
-    "promise": [
-        "util"
-    ],
-    "querystring": [
-        "logger-manager"
-    ],
-    "resizable": [
-        "dd"
-    ],
     "resizable/plugin/proxy": [
         "base",
         "node"
     ],
+    "resizable": [
+        "dd"
+    ],
     "router": [
         "url",
-        "event/dom",
-        "event/custom",
+        "event-dom",
+        "event-custom",
         "feature"
     ],
     "scroll-view/base": [
@@ -269,11 +221,13 @@ S.config("requires",{
     ],
     "scroll-view/plugin/scrollbar": [
         "component/control",
-        "event/gesture/pan"
+        "event-dom/gesture/pan"
     ],
     "scroll-view/touch": [
-        "scroll-view/base",
-        "event/gesture/pan"
+        "anim/timer",
+        "event-dom/gesture/pan",
+        "component/container",
+        "component/extension/content-box"
     ],
     "separator": [
         "component/control"
@@ -285,9 +239,7 @@ S.config("requires",{
         "dom"
     ],
     "swf": [
-        "dom",
-        "json",
-        "attribute"
+        "dom"
     ],
     "tabs": [
         "toolbar",
@@ -304,74 +256,100 @@ S.config("requires",{
         "component/extension/delegate-children"
     ],
     "url": [
-        "querystring",
-        "path"
-    ],
-    "util": [
-        "logger-manager"
-    ],
-    "xtemplate": [
-        "xtemplate/runtime"
-    ],
-    "xtemplate/runtime": [
-        "util"
+        "modulex-querystring",
+        "modulex-path"
     ]
 });
-var win = window,
-    isTouchGestureSupported = Feature.isTouchGestureSupported(),
-    add = S.add,
-    emptyObject = {};
-
-function alias(name, aliasName) {
-   var cfg;
-   if(typeof name ==="string") {
-       cfg = {};
-       cfg[name] = aliasName;
-   } else {
-       cfg = name;
-   }
-   S.config("alias", cfg);
-}
-
-alias('anim', Feature.getCssVendorInfo('transition') ? 'anim/transition' : 'anim/timer');
-alias({
-    'dom/basic': [
-        'dom/base',
-        UA.ieMode < 9 ? 'dom/ie' : '',
-        Feature.isClassListSupported() ? '' : 'dom/class-list'
-    ],
+modulex.config('alias', {
+    'modulex-attribute': 'attribute'
+});
+modulex.config('alias', {
+    'modulex-dom': 'dom',
+    'dom/selector': Feature.isQuerySelectorSupported() ? '' : 'query-selector',
     dom: [
-        'dom/basic',
-        Feature.isQuerySelectorSupported() ? '' : 'dom/selector'
+        'dom/base',
+            UA.ieMode < 9 ? 'dom/ie' : ''
     ]
 });
-alias('event/dom', [
-    'event/dom/base',
-    Feature.isHashChangeSupported() ? '' : 'event/dom/hashchange',
-        UA.ieMode < 9 ? 'event/dom/ie' : '',
-    Feature.isInputEventSupported() ? '' : 'event/dom/input',
-    UA.ie ? '' : 'event/dom/focusin'
-]);
-if (!isTouchGestureSupported) {
-    add('event/gesture/edge-pan', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/pinch', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/rotate', emptyObject);
-}
-
-if (!win.DeviceMotionEvent) {
-    add('event/gesture/shake', emptyObject);
-}
-
-if (!isTouchGestureSupported) {
-    add('event/gesture/swipe', emptyObject);
-}
-
-alias('ajax','io');
-alias('scroll-view', Feature.isTouchGestureSupported() ? 'scroll-view/touch' : 'scroll-view/base');
+modulex.config('alias', {
+    'modulex-event-base': 'event-base'
+});
+modulex.config('alias', {
+    'modulex-event-custom': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-feature': 'feature'
+});
+modulex.config('alias', {
+    'anim': Feature.getCssVendorInfo('transition') ? 'anim/transition' : 'anim/timer'
+});
+modulex.config('alias', {
+    'modulex-attribute': 'attribute'
+});
+modulex.config('alias', {
+    'modulex-base': 'base'
+});
+modulex.config('alias', {
+    'modulex-color': 'color'
+});
+modulex.config('alias', {
+    'modulex-dom': 'dom',
+    'dom/selector': Feature.isQuerySelectorSupported() ? '' : 'query-selector',
+    dom: [
+        'dom/base',
+            UA.ieMode < 9 ? 'dom/ie' : ''
+    ]
+});
+modulex.config('alias', {
+    'modulex-event-base': 'event-base'
+});
+modulex.config('alias', {
+    'modulex-event-custom': 'event-custom'
+});
+modulex.config('alias', {
+    'event-dom': [
+        'event-dom/base',
+        Feature.isHashChangeSupported() ? '' : 'event-dom/hashchange',
+            UA.ieMode < 9 ? 'event-dom/ie' : '',
+        Feature.isInputEventSupported() ? '' : 'event-dom/input',
+        UA.ie ? '' : 'event-dom/focusin'
+    ]
+});
+modulex.config('alias', {
+    'modulex-feature': 'feature'
+});
+modulex.config('alias', {
+    'modulex-path': 'path'
+});
+modulex.config('alias', {
+    'modulex-promise': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-querystring': 'querystring'
+});
+modulex.config('alias', {'scroll-view': Feature.isTouchGestureSupported() ? 'scroll-view/touch' : 'scroll-view/base'});
+modulex.config('alias', {
+    'modulex-ua': 'ua'
+});
+modulex.config('alias', {
+    'modulex-url': 'url'
+});
+modulex.config('alias', {
+    'modulex-util': 'util'
+});
+modulex.config('alias', {
+    'modulex-path': 'path'
+});
+modulex.config('alias', {
+    'modulex-promise': 'event-custom'
+});
+modulex.config('alias', {
+    'modulex-querystring': 'querystring'
+});
+modulex.config('alias', {
+    'modulex-ua': 'ua'
+});
+modulex.config('alias', {
+    'modulex-util': 'util'
+});
 });

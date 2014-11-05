@@ -1,10 +1,10 @@
-/*
-Copyright 2014, KISSY v5.0.0
-MIT Licensed
-build time: Jul 18 14:04
-*/
 /**
 * Variables to customize the look and feel from Bootstrap.
+*
+* @author yiminghe@gmail.com
+*/
+/**
+* Snippets of reusable CSS to develop faster and keep code readable from KISSY and Bootstrap.
 *
 * @author yiminghe@gmail.com
 */
@@ -52,11 +52,6 @@ build time: Jul 18 14:04
 .ks-overlay-close-x {
   display: none;
 }
-/**
-* Snippets of reusable CSS to develop faster and keep code readable from KISSY and Bootstrap.
-*
-* @author yiminghe@gmail.com
-*/
 .ks-overlay-mask {
   position: fixed;
   top: 0;

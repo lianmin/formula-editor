@@ -1,8 +1,3 @@
-/*
-Copyright 2014, KISSY v5.0.0
-MIT Licensed
-build time: Jul 18 14:05
-*/
 /**
 * Variables to customize the look and feel from Bootstrap.
 *
@@ -153,10 +148,8 @@ build time: Jul 18 14:05
   position: relative;
 }
 .ks-tabs-tab .ks-tabs-tab-close {
-  display: inline-block;
   width: 14px;
   height: 14px;
-  vertical-align: text-top;
   background-image: url(//gtms03.alicdn.com/tps/i3/TB1.yyfFVXXXXbNXXXX48eSMFXX-469-159.png);
   background-repeat: no-repeat;
   background-position: -312px 0;
